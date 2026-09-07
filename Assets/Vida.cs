@@ -1,23 +1,24 @@
+// Vida.cs (Actualizado)
 using UnityEngine;
 
 public class Vida : MonoBehaviour
 {
-    public int vidaMaxima = 2;
-    private int vidaActual;
+    public int max = 2;
+    public bool esEnemigo = true;
 
-    void Awake()
-    {
-        vidaActual = vidaMaxima;
-    }
+    int actual;
 
-    public void RecibirDanio(int cantidad)
+    void Awake() => actual = max;
+
+    public void RecibirDanio(int danio)
     {
-        vidaActual -= cantidad;
-        if (vidaActual <= 0) Morir();
+        actual -= danio;
+        if (actual <= 0) Morir();
     }
 
     void Morir()
     {
+        if (esEnemigo && GestorLuz.I != null) GestorLuz.I.OnKill();
         Destroy(gameObject);
     }
 }
