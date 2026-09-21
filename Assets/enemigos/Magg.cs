@@ -79,7 +79,7 @@ public class Magg : MonoBehaviour
 
         Vector2 objetivo = Vector2.zero;
         if (distancia <= rangoDeteccion && distancia < distanciaSegura)
-            objetivo = -direccion * velocidad; // huye en la dirección contraria
+            objetivo = -direccion * velocidad;
 
         float tasa = objetivo.sqrMagnitude > 0.01f ? aceleracion : desaceleracion;
         rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, objetivo, tasa * Time.fixedDeltaTime);
