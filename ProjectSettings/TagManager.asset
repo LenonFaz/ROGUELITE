@@ -42,11 +42,11 @@ TagManager:
   - name: b
     uniqueID: 960541437
     locked: 0
-  - name: Default
-    uniqueID: 0
-    locked: 0
   - name: terren
     uniqueID: 1148970293
+    locked: 0
+  - name: Default
+    uniqueID: 0
     locked: 0
   m_RenderingLayers:
   - Default
