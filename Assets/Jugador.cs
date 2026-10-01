@@ -2,38 +2,53 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(SpriteRenderer))]
 public class Jugador : MonoBehaviour
 {
     [Header("Movimiento")]
-    public float velocidad = 6f;
-    public float aceleracion = 45f;
-    public float desaceleracion = 60f;
+    public float vel = 6f;
+    public float acel = 45f;
+    public float desacel = 60f;
 
     [Header("Dash")]
-    public float velocidadDash = 22f;
-    public float duracionDash = 0.15f;
-    public float cooldownDash = 0.6f;
-    public float duracionInvencibilidad = 0.2f;
+    public float velDash = 22f;
+    public float durDash = 0.15f;
+    public float cdDash = 0.6f;
+    public float durInv = 0.2f;
 
-    private Rigidbody2D rb;
-    private Empuje empuje;
+    [Header("Animaciones")]
+    public Animator anim;
+    public SpriteRenderer sprite;
+    public AnimationClip aUp;
+    public AnimationClip aDown;
+    public AnimationClip aRight; // Se usará para derecha e izquierda
+    public AnimationClip aIdle;
+    public AnimationClip aDash;
 
-    private Vector2 inputMovimiento;
-    private Vector2 ultimaDireccion = Vector2.down;
+    Rigidbody2D rb;
+    Empuje empuje;
 
-    private bool dasheando = false;
-    private bool puedeDashear = true;
-    private float timerDash = 0f;
-    private float timerCooldownDash = 0f;
+    Vector2 input;
+    Vector2 ultimaDir = Vector2.down;
 
-    public bool EsInvencible { get; private set; }
-    private float timerInvencibilidad = 0f;
+    bool dasheando;
+    bool puedeDashear = true;
+    float tDash;
+    float tCdDash;
+
+    public bool invencible { get; private set; }
+    float tInv;
+
+    string nombreAnimActual;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
         empuje = GetComponent<Empuje>();
+
+        if (!anim) anim = GetComponent<Animator>();
+        if (!sprite) sprite = GetComponent<SpriteRenderer>();
     }
 
     void Update()
@@ -41,21 +56,22 @@ public class Jugador : MonoBehaviour
         LeerInput();
         LeerDash();
         ActualizarTimers(Time.deltaTime);
+        ActualizarAnim();
     }
 
     void FixedUpdate()
     {
-        if (empuje != null && empuje.EstaEmpujado) return;
+        if (empuje && empuje.EstaEmpujado) return;
 
         if (dasheando)
         {
-            rb.linearVelocity = ultimaDireccion * velocidadDash;
+            rb.linearVelocity = ultimaDir * velDash;
             return;
         }
 
-        Vector2 objetivo = inputMovimiento * velocidad;
-        float tasa = inputMovimiento.sqrMagnitude > 0.01f ? aceleracion : desaceleracion;
-        rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, objetivo, tasa * Time.fixedDeltaTime);
+        Vector2 obj = input * vel;
+        float tasa = input.sqrMagnitude > 0.01f ? acel : desacel;
+        rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, obj, tasa * Time.fixedDeltaTime);
     }
 
     void LeerInput()
@@ -69,9 +85,15 @@ public class Jugador : MonoBehaviour
         if (kb.wKey.isPressed) y += 1f;
         if (kb.sKey.isPressed) y -= 1f;
 
-        inputMovimiento = new Vector2(x, y).normalized;
-        if (inputMovimiento.sqrMagnitude > 0.01f)
-            ultimaDireccion = inputMovimiento;
+        input = new Vector2(x, y).normalized;
+
+        if (input.sqrMagnitude > 0.01f)
+        {
+            if (Mathf.Abs(input.x) > Mathf.Abs(input.y))
+                ultimaDir = input.x > 0 ? Vector2.right : Vector2.left;
+            else
+                ultimaDir = input.y > 0 ? Vector2.up : Vector2.down;
+        }
     }
 
     void LeerDash()
@@ -80,38 +102,71 @@ public class Jugador : MonoBehaviour
         if (kb == null) return;
 
         if (kb.spaceKey.wasPressedThisFrame && puedeDashear && !dasheando)
-            Dashear();
-    }
-
-    void Dashear()
-    {
-        dasheando = true;
-        puedeDashear = false;
-        timerDash = duracionDash;
-        timerCooldownDash = cooldownDash;
-
-        EsInvencible = true;
-        timerInvencibilidad = duracionInvencibilidad;
+        {
+            dasheando = true;
+            puedeDashear = false;
+            tDash = durDash;
+            tCdDash = cdDash;
+            invencible = true;
+            tInv = durInv;
+        }
     }
 
     void ActualizarTimers(float dt)
     {
         if (dasheando)
         {
-            timerDash -= dt;
-            if (timerDash <= 0f) dasheando = false;
+            tDash -= dt;
+            if (tDash <= 0f) dasheando = false;
         }
 
-        if (EsInvencible)
+        if (invencible)
         {
-            timerInvencibilidad -= dt;
-            if (timerInvencibilidad <= 0f) EsInvencible = false;
+            tInv -= dt;
+            if (tInv <= 0f) invencible = false;
         }
 
         if (!puedeDashear)
         {
-            timerCooldownDash -= dt;
-            if (timerCooldownDash <= 0f) puedeDashear = true;
+            tCdDash -= dt;
+            if (tCdDash <= 0f) puedeDashear = true;
+        }
+    }
+
+    void ActualizarAnim()
+    {
+        if (!anim || !sprite) return;
+
+        AnimationClip clipObj = aIdle;
+
+        if (dasheando)
+        {
+            clipObj = aDash;
+        }
+        else if (input.sqrMagnitude > 0.01f)
+        {
+            if (ultimaDir == Vector2.up)
+            {
+                clipObj = aUp;
+                sprite.flipX = false; // Restablecer flip al ir arriba
+            }
+            else if (ultimaDir == Vector2.down)
+            {
+                clipObj = aDown;
+                sprite.flipX = false; // Restablecer flip al ir abajo
+            }
+            else if (ultimaDir == Vector2.right || ultimaDir == Vector2.left)
+            {
+                clipObj = aRight;
+                // Si va a la izquierda se voltea (true), si va a la derecha se mantiene normal (false)
+                sprite.flipX = (ultimaDir == Vector2.left);
+            }
+        }
+
+        if (clipObj && nombreAnimActual != clipObj.name)
+        {
+            anim.Play(clipObj.name);
+            nombreAnimActual = clipObj.name;
         }
     }
 }
