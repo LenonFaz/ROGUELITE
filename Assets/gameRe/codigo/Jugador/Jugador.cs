@@ -21,7 +21,7 @@ public class Jugador : MonoBehaviour
     public SpriteRenderer sprite;
     public AnimationClip aUp;
     public AnimationClip aDown;
-    public AnimationClip aRight; // Se usará para derecha e izquierda
+    public AnimationClip aRight;
     public AnimationClip aIdle;
     public AnimationClip aDash;
 
@@ -89,10 +89,7 @@ public class Jugador : MonoBehaviour
 
         if (input.sqrMagnitude > 0.01f)
         {
-            if (Mathf.Abs(input.x) > Mathf.Abs(input.y))
-                ultimaDir = input.x > 0 ? Vector2.right : Vector2.left;
-            else
-                ultimaDir = input.y > 0 ? Vector2.up : Vector2.down;
+            ultimaDir = input;
         }
     }
 
@@ -142,24 +139,22 @@ public class Jugador : MonoBehaviour
         if (dasheando)
         {
             clipObj = aDash;
+            if (Mathf.Abs(ultimaDir.x) > 0.01f)
+            {
+                sprite.flipX = ultimaDir.x < 0;
+            }
         }
         else if (input.sqrMagnitude > 0.01f)
         {
-            if (ultimaDir == Vector2.up)
-            {
-                clipObj = aUp;
-                sprite.flipX = false; // Restablecer flip al ir arriba
-            }
-            else if (ultimaDir == Vector2.down)
-            {
-                clipObj = aDown;
-                sprite.flipX = false; // Restablecer flip al ir abajo
-            }
-            else if (ultimaDir == Vector2.right || ultimaDir == Vector2.left)
+            if (Mathf.Abs(input.x) >= Mathf.Abs(input.y))
             {
                 clipObj = aRight;
-                // Si va a la izquierda se voltea (true), si va a la derecha se mantiene normal (false)
-                sprite.flipX = (ultimaDir == Vector2.left);
+                sprite.flipX = input.x < 0;
+            }
+            else
+            {
+                clipObj = input.y > 0 ? aUp : aDown;
+                sprite.flipX = false;
             }
         }
 

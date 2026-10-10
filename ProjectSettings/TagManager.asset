@@ -13,7 +13,7 @@ TagManager:
   - Water
   - UI
   - Player
-  - PARED
+  - 
   - 
   - 
   - 
@@ -53,6 +53,12 @@ TagManager:
     locked: 0
   - name: FX
     uniqueID: 1661908553
+    locked: 0
+  - name: CaminarAtras
+    uniqueID: 1974036763
+    locked: 0
+  - name: Colision
+    uniqueID: 3529736529
     locked: 0
   m_RenderingLayers:
   - Default
