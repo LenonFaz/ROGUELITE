@@ -6,62 +6,85 @@ using UnityEngine.InputSystem;
 public class Jugador : MonoBehaviour
 {
     [Header("Movimiento")]
-    public float vel = 6f;
-    public float acel = 45f;
-    public float desacel = 60f;
+    [SerializeField, Min(0f)] private float vel = 6f;
+    [SerializeField, Min(0f)] private float acel = 45f;
+    [SerializeField, Min(0f)] private float desacel = 60f;
 
     [Header("Dash")]
-    public float velDash = 22f;
-    public float durDash = 0.15f;
-    public float cdDash = 0.6f;
-    public float durInv = 0.2f;
+    [SerializeField, Min(0f)] private float velDash = 22f;
+    [SerializeField, Min(0f)] private float durDash = 0.15f;
+    [SerializeField, Min(0f)] private float cdDash = 0.6f;
+    [SerializeField, Min(0f)] private float durInv = 0.2f;
 
     [Header("Animaciones")]
-    public Animator anim;
-    public SpriteRenderer sprite;
-    public AnimationClip aUp;
-    public AnimationClip aDown;
-    public AnimationClip aRight; // Se usará para derecha e izquierda
-    public AnimationClip aIdle;
-    public AnimationClip aDash;
+    [SerializeField] private Animator anim;
+    [SerializeField] private SpriteRenderer sprite;
+    [SerializeField] private AnimationClip aUp;
+    [SerializeField] private AnimationClip aDown;
+    [SerializeField] private AnimationClip aRight;
+    [SerializeField] private AnimationClip aIdleUp;
+    [SerializeField] private AnimationClip aIdleDown;
+    [SerializeField] private AnimationClip aIdleRight;
+    [SerializeField] private AnimationClip aDash;
 
-    Rigidbody2D rb;
-    Empuje empuje;
+    private Rigidbody2D rb;
+    private Empuje empuje;
 
-    Vector2 input;
-    Vector2 ultimaDir = Vector2.down;
+    private Vector2 inputMov;
+    private Vector2 ultimaDir = Vector2.down;
 
-    bool dasheando;
-    bool puedeDashear = true;
-    float tDash;
-    float tCdDash;
+    private bool dasheando;
+    private bool puedeDashear = true;
+    private float tDash;
+    private float tCdDash;
 
-    public bool invencible { get; private set; }
-    float tInv;
+    public bool EsInvencible { get; private set; }
+    private float tInv;
 
-    string nombreAnimActual;
+    private string animActual;
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
+        TryGetComponent(out rb);
         rb.gravityScale = 0f;
-        empuje = GetComponent<Empuje>();
 
-        if (!anim) anim = GetComponent<Animator>();
-        if (!sprite) sprite = GetComponent<SpriteRenderer>();
+        TryGetComponent(out empuje);
+        if (!anim) TryGetComponent(out anim);
+        if (!sprite) TryGetComponent(out sprite);
+    }
+
+    void OnMove(InputValue value)
+    {
+        inputMov = value.Get<Vector2>();
+
+        if (inputMov != Vector2.zero)
+        {
+            ultimaDir = inputMov.normalized;
+        }
+    }
+
+    void OnDash(InputValue value)
+    {
+        if (value.isPressed && puedeDashear && !dasheando)
+        {
+            dasheando = true;
+            puedeDashear = false;
+            tDash = durDash;
+            tCdDash = cdDash;
+            EsInvencible = true;
+            tInv = durInv;
+        }
     }
 
     void Update()
     {
-        LeerInput();
-        LeerDash();
         ActualizarTimers(Time.deltaTime);
         ActualizarAnim();
     }
 
     void FixedUpdate()
     {
-        if (empuje && empuje.EstaEmpujado) return;
+        if (empuje != null && empuje.EstaEmpujado) return;
 
         if (dasheando)
         {
@@ -69,47 +92,9 @@ public class Jugador : MonoBehaviour
             return;
         }
 
-        Vector2 obj = input * vel;
-        float tasa = input.sqrMagnitude > 0.01f ? acel : desacel;
+        Vector2 obj = inputMov * vel;
+        float tasa = inputMov != Vector2.zero ? acel : desacel;
         rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, obj, tasa * Time.fixedDeltaTime);
-    }
-
-    void LeerInput()
-    {
-        var kb = Keyboard.current;
-        if (kb == null) return;
-
-        float x = 0f, y = 0f;
-        if (kb.aKey.isPressed) x -= 1f;
-        if (kb.dKey.isPressed) x += 1f;
-        if (kb.wKey.isPressed) y += 1f;
-        if (kb.sKey.isPressed) y -= 1f;
-
-        input = new Vector2(x, y).normalized;
-
-        if (input.sqrMagnitude > 0.01f)
-        {
-            if (Mathf.Abs(input.x) > Mathf.Abs(input.y))
-                ultimaDir = input.x > 0 ? Vector2.right : Vector2.left;
-            else
-                ultimaDir = input.y > 0 ? Vector2.up : Vector2.down;
-        }
-    }
-
-    void LeerDash()
-    {
-        var kb = Keyboard.current;
-        if (kb == null) return;
-
-        if (kb.spaceKey.wasPressedThisFrame && puedeDashear && !dasheando)
-        {
-            dasheando = true;
-            puedeDashear = false;
-            tDash = durDash;
-            tCdDash = cdDash;
-            invencible = true;
-            tInv = durInv;
-        }
     }
 
     void ActualizarTimers(float dt)
@@ -120,10 +105,10 @@ public class Jugador : MonoBehaviour
             if (tDash <= 0f) dasheando = false;
         }
 
-        if (invencible)
+        if (EsInvencible)
         {
             tInv -= dt;
-            if (tInv <= 0f) invencible = false;
+            if (tInv <= 0f) EsInvencible = false;
         }
 
         if (!puedeDashear)
@@ -137,36 +122,37 @@ public class Jugador : MonoBehaviour
     {
         if (!anim || !sprite) return;
 
-        AnimationClip clipObj = aIdle;
+        AnimationClip clipObj = null;
 
         if (dasheando)
         {
             clipObj = aDash;
         }
-        else if (input.sqrMagnitude > 0.01f)
+        else
         {
-            if (ultimaDir == Vector2.up)
+            if (Mathf.Abs(ultimaDir.x) > Mathf.Abs(ultimaDir.y))
             {
-                clipObj = aUp;
-                sprite.flipX = false; // Restablecer flip al ir arriba
+                clipObj = inputMov != Vector2.zero ? aRight : aIdleRight;
+                sprite.flipX = ultimaDir.x < 0;
             }
-            else if (ultimaDir == Vector2.down)
+            else
             {
-                clipObj = aDown;
-                sprite.flipX = false; // Restablecer flip al ir abajo
-            }
-            else if (ultimaDir == Vector2.right || ultimaDir == Vector2.left)
-            {
-                clipObj = aRight;
-                // Si va a la izquierda se voltea (true), si va a la derecha se mantiene normal (false)
-                sprite.flipX = (ultimaDir == Vector2.left);
+                if (ultimaDir.y > 0)
+                {
+                    clipObj = inputMov != Vector2.zero ? aUp : aIdleUp;
+                }
+                else
+                {
+                    clipObj = inputMov != Vector2.zero ? aDown : aIdleDown;
+                }
+                sprite.flipX = false;
             }
         }
 
-        if (clipObj && nombreAnimActual != clipObj.name)
+        if (clipObj && animActual != clipObj.name)
         {
             anim.Play(clipObj.name);
-            nombreAnimActual = clipObj.name;
+            animActual = clipObj.name;
         }
     }
 }
