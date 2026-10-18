@@ -5,37 +5,37 @@ using UnityEngine;
 public class Magg : MonoBehaviour
 {
     [Header("Referencias")]
-    public Transform player;
+    [SerializeField] private Transform player;
 
     [Header("Movimiento")]
-    public float vel = 2.5f;
-    public float acel = 15f;
-    public float desacel = 18f;
-    public float rangoDet = 8f;
-    public float distMax = 6f;
-    public float distMin = 4f;
+    [SerializeField, Min(0f)] private float vel = 2.5f;
+    [SerializeField, Min(0f)] private float acel = 15f;
+    [SerializeField, Min(0f)] private float desacel = 18f;
+    [SerializeField, Min(0f)] private float rangoDet = 8f;
+    [SerializeField, Min(0f)] private float distMax = 6f;
+    [SerializeField, Min(0f)] private float distMin = 4f;
 
     [Header("Disparo")]
-    public Bullet prefabBullet;
-    public Transform puntoDisparo;
-    public float cdDisparo = 1.5f;
-    public float tiempoAnticipacion = 0.5f;
+    [SerializeField] private Bullet prefabBullet;
+    [SerializeField] private Transform puntoDisparo;
+    [SerializeField, Min(0f)] private float cdDisparo = 1.5f;
+    [SerializeField, Min(0f)] private float tiempoAnticipacion = 0.5f;
 
     [Header("Animaciones")]
-    public Animator anim;
-    public SpriteRenderer sprite;
-    public AnimationClip aIdle;
-    public AnimationClip aMover;
-    public AnimationClip aAtacar;
+    [SerializeField] private Animator anim;
+    [SerializeField] private SpriteRenderer sprite;
+    [SerializeField] private AnimationClip aIdle;
+    [SerializeField] private AnimationClip aMover;
+    [SerializeField] private AnimationClip aAtacar;
 
-    Rigidbody2D rb;
-    Aturdido aturdido;
-    Empuje empuje;
+    private Rigidbody2D rb;
+    private Aturdido aturdido;
+    private Empuje empuje;
 
-    float tDisparo;
-    float tPrep;
-    bool preparandose;
-    string animActual;
+    private float tDisparo;
+    private float tPrep;
+    private bool preparandose;
+    private string animActual;
 
     void OnValidate()
     {
@@ -44,16 +44,16 @@ public class Magg : MonoBehaviour
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
+        TryGetComponent(out rb);
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
 
-        aturdido = GetComponent<Aturdido>();
-        empuje = GetComponent<Empuje>();
+        TryGetComponent(out aturdido);
+        TryGetComponent(out empuje);
 
-        if (!anim) anim = GetComponent<Animator>();
-        if (!sprite) sprite = GetComponent<SpriteRenderer>();
+        if (!anim) TryGetComponent(out anim);
+        if (!sprite) TryGetComponent(out sprite);
 
         if (!player)
         {
@@ -63,9 +63,10 @@ public class Magg : MonoBehaviour
 
         if (player)
         {
-            var col = GetComponent<Collider2D>();
-            var colP = player.GetComponent<Collider2D>();
-            if (col && colP) Physics2D.IgnoreCollision(col, colP, true);
+            if (TryGetComponent(out Collider2D col) && player.TryGetComponent(out Collider2D colP))
+            {
+                Physics2D.IgnoreCollision(col, colP, true);
+            }
         }
     }
 
@@ -101,14 +102,14 @@ public class Magg : MonoBehaviour
     {
         if (!player) return;
 
-        if (aturdido && aturdido.EstaAturdido)
+        if (aturdido != null && aturdido.EstaAturdido)
         {
             rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, desacel * Time.fixedDeltaTime);
             ActualizarAnim(Vector2.zero);
             return;
         }
 
-        if (empuje && empuje.EstaEmpujado) return;
+        if (empuje != null && empuje.EstaEmpujado) return;
 
         Vector2 obj = Vector2.zero;
 
@@ -120,7 +121,7 @@ public class Magg : MonoBehaviour
         {
             Vector2 hacia = player.position - transform.position;
             float dist = hacia.magnitude;
-            Vector2 dir = dist > 0.01f ? hacia.normalized : Vector2.zero;
+            Vector2 dir = hacia != Vector2.zero ? hacia.normalized : Vector2.zero;
 
             if (dist <= rangoDet)
             {
@@ -157,7 +158,7 @@ public class Magg : MonoBehaviour
         {
             clipObj = aAtacar;
         }
-        else if (velObj.sqrMagnitude > 0.01f || rb.linearVelocity.sqrMagnitude > 0.1f)
+        else if (velObj != Vector2.zero || rb.linearVelocity.sqrMagnitude > 0.1f)
         {
             clipObj = aMover;
         }
@@ -169,7 +170,7 @@ public class Magg : MonoBehaviour
         }
     }
 
-    bool Bloqueado() => (aturdido && aturdido.EstaAturdido) || (empuje && empuje.EstaEmpujado);
+    bool Bloqueado() => (aturdido != null && aturdido.EstaAturdido) || (empuje != null && empuje.EstaEmpujado);
 
     void Disparar()
     {
@@ -180,9 +181,10 @@ public class Magg : MonoBehaviour
 
         Bullet b = Instantiate(prefabBullet, pos, Quaternion.identity);
 
-        var miCol = GetComponent<Collider2D>();
-        var balaCol = b.GetComponent<Collider2D>();
-        if (miCol && balaCol) Physics2D.IgnoreCollision(miCol, balaCol, true);
+        if (TryGetComponent(out Collider2D miCol) && b.TryGetComponent(out Collider2D balaCol))
+        {
+            Physics2D.IgnoreCollision(miCol, balaCol, true);
+        }
 
         b.Init(dirBala);
     }

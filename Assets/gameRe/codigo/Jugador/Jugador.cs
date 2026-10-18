@@ -16,6 +16,15 @@ public class Jugador : MonoBehaviour
     [SerializeField, Min(0f)] private float cdDash = 0.6f;
     [SerializeField, Min(0f)] private float durInv = 0.2f;
 
+    [Header("Efecto de Imagen Residual (Sin Prefab)")]
+    [Tooltip("Cuánto tiempo en total estará soltando sombras después de pulsar Dash")]
+    [SerializeField, Min(0f)] private float duracionGeneracionResidual = 0.2f;
+    [Tooltip("Cada cuánto tiempo suelta una sombra (más bajo = más juntas)")]
+    [SerializeField, Min(0.01f)] private float intervaloResidual = 0.015f;
+    [Tooltip("Cuánto tarda cada sombra individual en desaparecer")]
+    [SerializeField, Min(0.1f)] private float duracionResidual = 0.4f;
+    [SerializeField] private Color colorResidual = new Color(0f, 0.5f, 1f, 0.6f);
+
     [Header("Animaciones")]
     [SerializeField] private Animator anim;
     [SerializeField] private SpriteRenderer sprite;
@@ -29,6 +38,7 @@ public class Jugador : MonoBehaviour
 
     private Rigidbody2D rb;
     private Empuje empuje;
+    private AtaqueJugador ataque;
 
     private Vector2 inputMov;
     private Vector2 ultimaDir = Vector2.down;
@@ -37,6 +47,9 @@ public class Jugador : MonoBehaviour
     private bool puedeDashear = true;
     private float tDash;
     private float tCdDash;
+
+    private float tGeneracionResidual; // Temporizador independiente para soltar las sombras
+    private float tSiguienteResidual;
 
     public bool EsInvencible { get; private set; }
     private float tInv;
@@ -49,6 +62,8 @@ public class Jugador : MonoBehaviour
         rb.gravityScale = 0f;
 
         TryGetComponent(out empuje);
+        TryGetComponent(out ataque);
+
         if (!anim) TryGetComponent(out anim);
         if (!sprite) TryGetComponent(out sprite);
     }
@@ -73,6 +88,10 @@ public class Jugador : MonoBehaviour
             tCdDash = cdDash;
             EsInvencible = true;
             tInv = durInv;
+
+            // Iniciamos los temporizadores de las sombras visuales
+            tGeneracionResidual = duracionGeneracionResidual;
+            tSiguienteResidual = 0f;
         }
     }
 
@@ -80,6 +99,12 @@ public class Jugador : MonoBehaviour
     {
         ActualizarTimers(Time.deltaTime);
         ActualizarAnim();
+
+        // Ahora evaluamos el temporizador independiente, no si está "dasheando"
+        if (tGeneracionResidual > 0f)
+        {
+            ManejarImagenesResiduales(Time.deltaTime);
+        }
     }
 
     void FixedUpdate()
@@ -116,11 +141,49 @@ public class Jugador : MonoBehaviour
             tCdDash -= dt;
             if (tCdDash <= 0f) puedeDashear = true;
         }
+
+        if (tGeneracionResidual > 0f)
+        {
+            tGeneracionResidual -= dt;
+        }
+    }
+
+    void ManejarImagenesResiduales(float dt)
+    {
+        if (!sprite) return;
+
+        tSiguienteResidual -= dt;
+
+        if (tSiguienteResidual <= 0f)
+        {
+            tSiguienteResidual = intervaloResidual;
+
+            GameObject go = new GameObject("SombraDash");
+            go.transform.position = transform.position;
+            go.transform.rotation = transform.rotation;
+            go.transform.localScale = transform.localScale;
+
+            SpriteRenderer srObj = go.AddComponent<SpriteRenderer>();
+            srObj.sprite = sprite.sprite;
+            srObj.flipX = sprite.flipX;
+            srObj.material = sprite.material;
+            srObj.sortingLayerID = sprite.sortingLayerID;
+            srObj.sortingOrder = sprite.sortingOrder - 1;
+
+            ImagenResidual residual = go.AddComponent<ImagenResidual>();
+            residual.Configurar(duracionResidual, colorResidual);
+        }
     }
 
     void ActualizarAnim()
     {
         if (!anim || !sprite) return;
+
+        if (ataque != null && ataque.EstaAtacando)
+        {
+            animActual = "";
+            return;
+        }
 
         AnimationClip clipObj = null;
 

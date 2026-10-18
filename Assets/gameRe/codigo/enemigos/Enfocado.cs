@@ -5,60 +5,53 @@ using UnityEngine;
 public class Enfocado : MonoBehaviour
 {
     [Header("Referencias")]
-    public Transform player;
+    [SerializeField] private Transform player;
 
-    [Header("Movimiento")]
-    public float vel = 2f;
-    public float acel = 15f;
-    public float desacel = 18f;
-    public float rangoDet = 9f;
-    public float distMax = 7f;
-    public float distMin = 5f;
+    [Header("Físicas")]
+    [Tooltip("Fuerza con la que frena si es empujado por un ataque")]
+    [SerializeField, Min(0f)] private float desacel = 18f;
+    [Tooltip("Distancia a la que empezará a disparar el láser")]
+    [SerializeField, Min(0f)] private float rangoDet = 15f;
 
     [Header("Láser Gaster Blaster")]
-    public LayerMask capaJugador; // Asegúrate de asignar la capa de tu jugador en el inspector
-    public float cdAtaque = 2.5f;
-    public float rangoLaser = 12f;
-    public float fuerzaEmpujeLaser = 10f;
+    [SerializeField] private LayerMask capaJugador;
+    [SerializeField, Min(0f)] private float cdAtaque = 2.5f;
+    [SerializeField, Min(0f)] private float rangoLaser = 12f;
+    [SerializeField, Min(0f)] private float fuerzaEmpujeLaser = 10f;
 
     [Space]
-    public float tiempoApuntar = 1f;   // El láser sigue al jugador
-    public float tiempoFijado = 0.35f; // El láser se bloquea en su posición como advertencia final
-    public float tiempoDisparo = 0.2f; // Lo que dura el rayo grueso en pantalla
+    [SerializeField, Min(0f)] private float tiempoApuntar = 1f;
+    [SerializeField, Min(0f)] private float tiempoFijado = 0.35f;
+    [SerializeField, Min(0f)] private float tiempoDisparo = 0.2f;
 
     [Header("Visuales")]
-    public Color colorMira = new Color(1f, 0f, 0f, 0.4f);
-    public float grosorMira = 0.05f;
-    public Color colorLaser = Color.red;
-    public float grosorLaser = 0.8f;
+    [SerializeField] private Color colorMira = new Color(1f, 0f, 0f, 0.4f);
+    [SerializeField, Min(0f)] private float grosorMira = 0.05f;
+    [SerializeField] private Color colorLaser = Color.red;
+    [SerializeField, Min(0f)] private float grosorLaser = 0.8f;
 
-    Rigidbody2D rb;
-    Aturdido aturdido;
-    Empuje empuje;
-    LineRenderer lr;
+    private Rigidbody2D rb;
+    private Aturdido aturdido;
+    private Empuje empuje;
+    private LineRenderer lr;
 
-    enum Estado { Moviendose, Apuntando, Fijado, Disparando }
-    Estado estadoActual = Estado.Moviendose;
+    enum Estado { Esperando, Apuntando, Fijado, Disparando }
+    private Estado estadoActual = Estado.Esperando;
 
-    float timerCd;
-    float timerEstado;
-    Vector2 dirRayo;
-
-    void OnValidate()
-    {
-        if (distMin >= distMax) distMax = distMin + 1f;
-    }
+    private float timerCd;
+    private float timerEstado;
+    private Vector2 dirRayo;
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
+        TryGetComponent(out rb);
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
 
-        aturdido = GetComponent<Aturdido>();
-        empuje = GetComponent<Empuje>();
-        lr = GetComponent<LineRenderer>();
+        TryGetComponent(out aturdido);
+        TryGetComponent(out empuje);
+        TryGetComponent(out lr);
 
         ConfigurarLinea();
 
@@ -70,9 +63,10 @@ public class Enfocado : MonoBehaviour
 
         if (player)
         {
-            var col = GetComponent<Collider2D>();
-            var colP = player.GetComponent<Collider2D>();
-            if (col && colP) Physics2D.IgnoreCollision(col, colP, true);
+            if (TryGetComponent(out Collider2D col) && player.TryGetComponent(out Collider2D colP))
+            {
+                Physics2D.IgnoreCollision(col, colP, true);
+            }
         }
     }
 
@@ -89,17 +83,17 @@ public class Enfocado : MonoBehaviour
     {
         if (!player) return;
 
-        // Si es aturdido o empujado, cancela el ataque inmediatamente
-        if (Bloqueado() && estadoActual != Estado.Moviendose)
+        // Si es aturdido o empujado, se cancela el láser
+        if (Bloqueado() && estadoActual != Estado.Esperando)
         {
-            estadoActual = Estado.Moviendose;
+            estadoActual = Estado.Esperando;
             lr.enabled = false;
-            timerCd = cdAtaque; // Lo forzamos a esperar de nuevo
+            timerCd = cdAtaque;
         }
 
         switch (estadoActual)
         {
-            case Estado.Moviendose:
+            case Estado.Esperando:
                 timerCd -= Time.deltaTime;
                 float dist = Vector2.Distance(transform.position, player.position);
 
@@ -114,7 +108,6 @@ public class Enfocado : MonoBehaviour
             case Estado.Apuntando:
                 timerEstado -= Time.deltaTime;
 
-                // El rayo persigue la posición del jugador
                 dirRayo = (player.position - transform.position).normalized;
                 DibujarLinea(colorMira, grosorMira);
 
@@ -128,26 +121,24 @@ public class Enfocado : MonoBehaviour
             case Estado.Fijado:
                 timerEstado -= Time.deltaTime;
 
-                // dirRayo YA NO se actualiza, el láser se queda congelado en el sitio
                 DibujarLinea(colorMira, grosorMira);
 
                 if (timerEstado <= 0f)
                 {
                     estadoActual = Estado.Disparando;
                     timerEstado = tiempoDisparo;
-                    EjecutarDanioRayo(); // Hace el daño en el frame 1 del disparo
+                    EjecutarDanioRayo();
                 }
                 break;
 
             case Estado.Disparando:
                 timerEstado -= Time.deltaTime;
 
-                // Láser grueso final
                 DibujarLinea(colorLaser, grosorLaser);
 
                 if (timerEstado <= 0f)
                 {
-                    estadoActual = Estado.Moviendose;
+                    estadoActual = Estado.Esperando;
                     timerCd = cdAtaque;
                     lr.enabled = false;
                 }
@@ -159,46 +150,16 @@ public class Enfocado : MonoBehaviour
     {
         if (!player) return;
 
-        if (aturdido && aturdido.EstaAturdido)
+        if (aturdido != null && aturdido.EstaAturdido)
         {
             rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, desacel * Time.fixedDeltaTime);
             return;
         }
 
-        if (empuje && empuje.EstaEmpujado) return;
+        if (empuje != null && empuje.EstaEmpujado) return;
 
-        // Si está en cualquier estado que no sea moverse, se clava en el piso
-        if (estadoActual != Estado.Moviendose)
-        {
-            rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, (desacel * 2f) * Time.fixedDeltaTime);
-            return;
-        }
-
-        // Movimiento normal buscando su anillo ideal de distancia
-        Vector2 hacia = player.position - transform.position;
-        float dist = hacia.magnitude;
-        Vector2 dir = dist > 0.01f ? hacia.normalized : Vector2.zero;
-
-        if (dist > rangoDet)
-        {
-            rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, desacel * Time.fixedDeltaTime);
-            return;
-        }
-
-        bool enZonaIdeal = (dist >= distMin && dist <= distMax);
-
-        if (enZonaIdeal)
-        {
-            rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, (desacel * 2f) * Time.fixedDeltaTime);
-        }
-        else
-        {
-            Vector2 obj = Vector2.zero;
-            if (dist > distMax) obj = dir * vel;
-            else if (dist < distMin) obj = -dir * vel;
-
-            rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, obj, acel * Time.fixedDeltaTime);
-        }
+        // Al ser una "torreta", su único objetivo de movimiento es quedarse quieto
+        rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, desacel * Time.fixedDeltaTime);
     }
 
     void DibujarLinea(Color color, float grosor)
@@ -212,7 +173,6 @@ public class Enfocado : MonoBehaviour
 
     void EjecutarDanioRayo()
     {
-        // Creamos una caja de colisión a lo largo de todo el rayo
         Vector2 centroHitbox = (Vector2)transform.position + dirRayo * (rangoLaser / 2f);
         Vector2 tamañoHitbox = new Vector2(rangoLaser, grosorLaser);
         float angulo = Mathf.Atan2(dirRayo.y, dirRayo.x) * Mathf.Rad2Deg;
@@ -221,27 +181,19 @@ public class Enfocado : MonoBehaviour
 
         foreach (var c in golpeados)
         {
-            // c.GetComponent<Vida>()?.RecibirDanio(1);
-
-            var empujeJugador = c.GetComponent<Empuje>();
-            if (empujeJugador != null)
+            if (c.TryGetComponent(out Vida vida)) vida.RecibirDanio(1);
+            if (c.TryGetComponent(out Empuje empujeJugador))
             {
                 empujeJugador.AplicarEmpuje(dirRayo, fuerzaEmpujeLaser);
             }
         }
     }
 
-    bool Bloqueado() => (aturdido && aturdido.EstaAturdido) || (empuje && empuje.EstaEmpujado);
+    bool Bloqueado() => (aturdido != null && aturdido.EstaAturdido) || (empuje != null && empuje.EstaEmpujado);
 
     void OnDrawGizmosSelected()
     {
         Gizmos.color = new Color(0.7f, 0.2f, 0.9f, 0.25f);
         Gizmos.DrawWireSphere(transform.position, rangoDet);
-
-        Gizmos.color = new Color(0.2f, 0.9f, 0.2f, 0.35f);
-        Gizmos.DrawWireSphere(transform.position, distMax);
-
-        Gizmos.color = new Color(0.9f, 0.2f, 0.2f, 0.35f);
-        Gizmos.DrawWireSphere(transform.position, distMin);
     }
 }
