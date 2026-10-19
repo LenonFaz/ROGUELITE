@@ -263,7 +263,7 @@ GameObject:
   - component: {fileID: 111785503}
   - component: {fileID: 111785509}
   - component: {fileID: 111785502}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: ESPIRAL_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -302,7 +302,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 111785501}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7e9f965afc1c9c34c8422334f0291416, type: 3}
   m_Name: 
@@ -379,7 +379,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -6083,7 +6083,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 618523733}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: punto disparo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8518,8 +8518,13 @@ MonoBehaviour:
     m_Bits: 8
   danio: 1
   fuerzaEmpuje: 9.2
-  mostrarGizmo: 0
-  colorHitbox: {r: 0.15537548, g: 0, b: 1, a: 0.24705882}
+  animJugador: {fileID: 0}
+  spriteJugador: {fileID: 0}
+  duracionAnimAtaque: 0.2
+  aAtkUp: {fileID: 0}
+  aAtkDown: {fileID: 0}
+  aAtkRight: {fileID: 0}
+  prefabEfectoGolpe: {fileID: 0}
 --- !u!114 &1766701898
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8539,6 +8544,10 @@ MonoBehaviour:
   durDash: 0.12
   cdDash: 0.6
   durInv: 0.2
+  duracionGeneracionResidual: 0.2
+  intervaloResidual: 0.015
+  duracionResidual: 0.4
+  colorResidual: {r: 1, g: 0, b: 0.03836775, a: 0.6}
   anim: {fileID: 0}
   sprite: {fileID: 0}
   aUp: {fileID: 7400000, guid: 16c18ed5f5ea6dd4ba0719bf3b8764da, type: 2}
