@@ -15,7 +15,7 @@ public class GestorLuz : MonoBehaviour
 
     public float LuzActual { get; private set; }
 
-    // Devuelve un valor de 0.0 a 1.0 para que las antorchas y la UI lo lean fácilmente
+    // Devuelve un valor de 0.0 a 1.0 para que la interfaz lo lea fácilmente
     public float PorcentajeLuz => LuzActual / luzMaxima;
 
     private bool juegoTerminado = false;
@@ -40,7 +40,6 @@ public class GestorLuz : MonoBehaviour
         }
     }
 
-    // Funciones públicas que los otros scripts llamarán
     public void RegistrarGolpeAEnemigo() => ModificarLuz(-reduccionPorGolpe);
     public void RegistrarMuerteDeEnemigo() => ModificarLuz(-reduccionPorMuerte);
     public void RegistrarDanioAlJugador() => ModificarLuz(aumentoPorDanio);
@@ -54,7 +53,16 @@ public class GestorLuz : MonoBehaviour
     private void EjecutarVaporizacion()
     {
         juegoTerminado = true;
-        Debug.Log("La sala se iluminó por completo. El Demonio fue vaporizado.");
-        // Aquí conectaremos la pantalla de Game Over
+        Debug.Log("La barra de plegaria se llenó. Vaporizando al jugador...");
+
+        // Buscamos al jugador en la escena mediante su Tag
+        GameObject jugador = GameObject.FindGameObjectWithTag("Player");
+
+        if (jugador != null && jugador.TryGetComponent(out Vida vidaJugador))
+        {
+            // Le aplicamos daño masivo (9999) para saltar toda su armadura o vida extra
+            // y obligar a que su propio script ejecute la función Morir()
+            vidaJugador.RecibirDanio(9999);
+        }
     }
 }

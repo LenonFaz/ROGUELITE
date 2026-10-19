@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -14,22 +15,25 @@ public class Vida : MonoBehaviour
 
     private int vidaActual;
 
+    // Propiedad pública para saber si actualmente es intocable (por el Dash)
+    public bool EsInvulnerable { get; private set; }
+
     void Awake()
     {
         vidaActual = vidaMaxima;
+        EsInvulnerable = false;
     }
 
     public void RecibirDanio(int cantidad)
     {
-        // Si el objeto ya está muerto, ignoramos más daño
-        if (vidaActual <= 0) return;
+        // Si el objeto ya está muerto o es temporalmente invulnerable por el Dash, ignoramos el golpe
+        if (vidaActual <= 0 || EsInvulnerable) return;
 
         vidaActual -= cantidad;
 
         AlRecibirDanio?.Invoke();
 
         // --- INTEGRACIÓN CON EL GESTOR DE LUZ ---
-        // (Aquí estaba el error. Ahora llama correctamente a .Instancia)
         if (GestorLuz.Instancia != null)
         {
             if (esJugador)
@@ -54,11 +58,28 @@ public class Vida : MonoBehaviour
         vidaActual = Mathf.Clamp(vidaActual + cantidad, 0, vidaMaxima);
     }
 
+    // --- NUEVO: FUNCIONES PARA EL DASH (INVULNERABILIDAD) ---
+    public void ActivarInvulnerabilidad(float duracion)
+    {
+        // Iniciamos el contador de tiempo en segundo plano
+        StartCoroutine(RutinaInvulnerabilidad(duracion));
+    }
+
+    private IEnumerator RutinaInvulnerabilidad(float duracion)
+    {
+        EsInvulnerable = true; // Se vuelve intocable
+
+        // Espera los segundos exactos que dura tu Dash
+        yield return new WaitForSeconds(duracion);
+
+        EsInvulnerable = false; // Vuelve a ser vulnerable
+    }
+
     private void Morir()
     {
         AlMorir?.Invoke();
 
-        // Si es un enemigo el que muere, bajamos gran parte de la barra de luz
+        // Si es un enemigo el que muere, le avisa al Gestor para bajar la barra de luz
         if (!esJugador && GestorLuz.Instancia != null)
         {
             GestorLuz.Instancia.RegistrarMuerteDeEnemigo();

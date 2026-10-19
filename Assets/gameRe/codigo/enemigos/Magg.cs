@@ -20,6 +20,8 @@ public class Magg : MonoBehaviour
     [SerializeField] private Transform puntoDisparo;
     [SerializeField, Min(0f)] private float cdDisparo = 1.5f;
     [SerializeField, Min(0f)] private float tiempoAnticipacion = 0.5f;
+    [SerializeField, Min(0f)] private float velocidadBala = 8f;
+    [SerializeField, Min(1)] private int danioBala = 1;
 
     [Header("Animaciones")]
     [SerializeField] private Animator anim;
@@ -186,7 +188,8 @@ public class Magg : MonoBehaviour
             Physics2D.IgnoreCollision(miCol, balaCol, true);
         }
 
-        b.Init(dirBala);
+        // Esta es la línea actualizada que conecta con tu nuevo Bullet.cs modular
+        b.Init(dirBala, velocidadBala, danioBala, 5f);
     }
 
     void OnDrawGizmosSelected()

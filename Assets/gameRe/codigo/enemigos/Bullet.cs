@@ -3,37 +3,48 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Bullet : MonoBehaviour
 {
-    public float vel = 14f;
-    public float vida = 3f;
-    public int danio = 1;
-
-    Rigidbody2D rb;
-    Vector2 dir = Vector2.up;
+    private int danio;
+    private Rigidbody2D rb;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        // Configuramos el Rigidbody por código para evitar errores en el Inspector
+        rb.isKinematic = true;
         rb.gravityScale = 0f;
-        Destroy(gameObject, vida);
     }
 
-    public void Init(Vector2 d)
+    // Esta es la función modular. Cualquier enemigo puede llamarla con parámetros diferentes.
+    public void Init(Vector2 direccion, float velocidad, int danioBala, float tiempoDeVida = 5f)
     {
-        dir = d.normalized;
-        float rot = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0f, 0f, rot - 90f);
+        this.danio = danioBala;
+
+        // Le damos el impulso inicial. Al ser isKinematic, mantendrá esta velocidad constante.
+        rb.linearVelocity = direccion.normalized * velocidad;
+
+        // Rotamos la bala para que apunte visualmente hacia donde viaja (útil si tu sprite no es redondo)
+        float angulo = Mathf.Atan2(direccion.y, direccion.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0, 0, angulo);
+
+        Destroy(gameObject, tiempoDeVida);
     }
 
-    void FixedUpdate()
+    private void OnTriggerEnter2D(Collider2D col)
     {
-        rb.linearVelocity = dir * vel;
-    }
-
-    void OnTriggerEnter2D(Collider2D c)
-    {
-        if (c.CompareTag("Player"))
+        if (col.CompareTag("Player"))
         {
-            // c.GetComponent<Vida>()?.RecibirDanio(danio);
+            if (col.TryGetComponent(out Vida vidaJugador))
+            {
+                // Si está en dash, la bala es ignorada y sigue de largo
+                if (vidaJugador.EsInvulnerable) return;
+
+                vidaJugador.RecibirDanio(danio);
+            }
+            Destroy(gameObject);
+        }
+        else if (col.CompareTag("Pared"))
+        {
             Destroy(gameObject);
         }
     }
