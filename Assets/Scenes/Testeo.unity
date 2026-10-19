@@ -7827,7 +7827,7 @@ GameObject:
   - component: {fileID: 1239518517}
   - component: {fileID: 1239518516}
   m_Layer: 0
-  m_Name: Grid
+  m_Name: SALA 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7891,7 +7891,7 @@ Transform:
   m_GameObject: {fileID: 1369648984}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.9915695, y: -0.000030517578, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8016,7 +8016,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 4.55
+  orthographic size: 4
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -8127,7 +8127,7 @@ GameObject:
   - component: {fileID: 1517246261}
   - component: {fileID: 1517246260}
   m_Layer: 0
-  m_Name: LimiteTp
+  m_Name: LimiteTpEspiral
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8855,7 +8855,7 @@ MonoBehaviour:
     CustomLookAtTarget: 0
   Lens:
     FieldOfView: 34
-    OrthographicSize: 4.55
+    OrthographicSize: 4
     NearClipPlane: 0.3
     FarClipPlane: 1000
     Dutch: 0
