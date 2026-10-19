@@ -1,24 +1,70 @@
-// Vida.cs (Actualizado)
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Vida : MonoBehaviour
 {
-    public int max = 2;
-    public bool esEnemigo = true;
+    [Header("Configuración de Vida")]
+    [SerializeField, Min(1)] private int vidaMaxima = 5;
+    [Tooltip("Marca esta casilla SOLO si este script está en el Jugador")]
+    [SerializeField] private bool esJugador = false;
 
-    int actual;
+    [Header("Eventos (Opcional)")]
+    public UnityEvent AlRecibirDanio;
+    public UnityEvent AlMorir;
 
-    void Awake() => actual = max;
+    private int vidaActual;
 
-    public void RecibirDanio(int danio)
+    void Awake()
     {
-        actual -= danio;
-        if (actual <= 0) Morir();
+        vidaActual = vidaMaxima;
     }
 
-    void Morir()
+    public void RecibirDanio(int cantidad)
     {
-        if (esEnemigo && GestorLuz.I != null) GestorLuz.I.OnKill();
+        // Si el objeto ya está muerto, ignoramos más daño
+        if (vidaActual <= 0) return;
+
+        vidaActual -= cantidad;
+
+        AlRecibirDanio?.Invoke();
+
+        // --- INTEGRACIÓN CON EL GESTOR DE LUZ ---
+        // (Aquí estaba el error. Ahora llama correctamente a .Instancia)
+        if (GestorLuz.Instancia != null)
+        {
+            if (esJugador)
+            {
+                GestorLuz.Instancia.RegistrarDanioAlJugador();
+            }
+            else
+            {
+                GestorLuz.Instancia.RegistrarGolpeAEnemigo();
+            }
+        }
+
+        if (vidaActual <= 0)
+        {
+            Morir();
+        }
+    }
+
+    public void Curar(int cantidad)
+    {
+        if (vidaActual <= 0) return;
+        vidaActual = Mathf.Clamp(vidaActual + cantidad, 0, vidaMaxima);
+    }
+
+    private void Morir()
+    {
+        AlMorir?.Invoke();
+
+        // Si es un enemigo el que muere, bajamos gran parte de la barra de luz
+        if (!esJugador && GestorLuz.Instancia != null)
+        {
+            GestorLuz.Instancia.RegistrarMuerteDeEnemigo();
+        }
+
+        // Finalmente, destruimos el GameObject
         Destroy(gameObject);
     }
 }
