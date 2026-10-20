@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: ae5ced2dd32e92d49a621be540bc969c, type: 3}
+  m_Sprite: {fileID: -2346302928887187388, guid: 800c6edb5163fe8478098f9d5d603fd7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -131,7 +131,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.375, y: 0.375}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -153,8 +153,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProyectilEspiral
   vel: 4
   vida: 5
-  visual: {fileID: 0}
-  giroVisual: 720
   dano: 1
   tagJugador: Player
   capaObstaculos:

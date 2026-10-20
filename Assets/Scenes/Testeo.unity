@@ -320,8 +320,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 652ac04073b1b904190b94d929b8a1bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Vida
-  max: 2
-  esEnemigo: 1
+  vidaMaxima: 5
+  esJugador: 0
+  AlRecibirDanio:
+    m_PersistentCalls:
+      m_Calls: []
+  AlMorir:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!50 &111785505
 Rigidbody2D:
   serializedVersion: 5
@@ -8223,10 +8229,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a4e8159ab3c41a4785a0932cbffb18b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GestorLuz
-  max: 100
-  tasa: 5
-  killDrop: 15
-  ui: {fileID: 145483737}
+  luzMaxima: 100
+  aumentoPorSegundo: 1.5
+  aumentoPorDanio: 20
+  reduccionPorGolpe: 1
+  reduccionPorMuerte: 8
 --- !u!4 &1751811783
 Transform:
   m_ObjectHideFlags: 0
