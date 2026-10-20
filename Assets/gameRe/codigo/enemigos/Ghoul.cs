@@ -135,8 +135,12 @@ public class Ghoul : MonoBehaviour
         Collider2D[] golpeados = Physics2D.OverlapBoxAll(centro, tamHitbox, angulo, capaJugador);
         foreach (var c in golpeados)
         {
-            if (c.TryGetComponent(out Vida vida)) vida.RecibirDanio(danio);
-            if (c.TryGetComponent(out Empuje empujeJugador)) empujeJugador.AplicarEmpuje(dir, fuerzaEmpuje);
+            if (c.TryGetComponent(out Vida vida))
+            {
+                if (vida.EsInvulnerable) continue;
+                vida.RecibirDanio(danio);
+            }
+            if (c.TryGetComponent(out Empuje e)) e.AplicarEmpuje(dir, fuerzaEmpuje);
         }
     }
 

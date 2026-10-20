@@ -424,7 +424,7 @@ Transform:
   m_GameObject: {fileID: 83456905}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 20.94, y: 3.22, z: 0}
+  m_LocalPosition: {x: 27.34, y: 7.36, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -673,24 +673,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26f3b39d79eb1fb4e9ec64de3f5faeee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Escudero
-  jugador: {fileID: 0}
-  velPersecucion: 2.5
-  aceleracion: 15
-  desaceleracion: 18
-  rangoDeteccion: 6
-  rangoCarga: 2
-  velCarga: 9
-  tiempoPreparacion: 0.4
-  tiempoCarga: 0.35
-  tiempoEnfriamiento: 2
-  factorCurva: 5
-  tamHitbox: {x: 1.2, y: 1.2}
-  offsetHitbox: 0.5
+  player: {fileID: 0}
+  vel: 1.2
+  acel: 10
+  desacel: 18
+  rangoDet: 9
+  distCarga: 4
+  tiempoAviso: 0.6
+  velCarga: 6
+  durCarga: 0.7
+  giroGradosSeg: 40
+  tiempoRecuperacion: 1
+  radioGolpe: 0.6
   danio: 1
-  fuerzaEmpuje: 12
+  fuerzaEmpuje: 8
   capaJugador:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
 --- !u!50 &351001071
 Rigidbody2D:
   serializedVersion: 5
@@ -706,7 +705,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -717,7 +716,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!212 &351001072
 SpriteRenderer:
   serializedVersion: 2
@@ -786,7 +785,7 @@ Transform:
   m_GameObject: {fileID: 351001065}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 35.010002, y: 5.05, z: 0}
+  m_LocalPosition: {x: 25.37, y: 2.61, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1115,7 +1114,7 @@ Transform:
   m_GameObject: {fileID: 656968457}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 31.06, y: 5.080001, z: 0}
+  m_LocalPosition: {x: 31.44, y: 9.88, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1145,6 +1144,8 @@ MonoBehaviour:
   puntoDisparo: {fileID: 731389197}
   cdDisparo: 1.5
   tiempoAnticipacion: 0.5
+  velocidadBala: 8
+  danioBala: 1
   anim: {fileID: 0}
   sprite: {fileID: 0}
   aIdle: {fileID: 7400000, guid: b78a2e96fe0b58340b8b0a490449344e, type: 2}
@@ -1165,7 +1166,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -5012,7 +5013,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -5023,7 +5024,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!58 &1115540863
 CircleCollider2D:
   m_ObjectHideFlags: 0

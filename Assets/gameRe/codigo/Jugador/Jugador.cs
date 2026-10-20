@@ -15,6 +15,7 @@ public class Jugador : MonoBehaviour
     [SerializeField, Min(0f)] private float durDash = 0.15f;
     [SerializeField, Min(0f)] private float cdDash = 0.6f;
     [SerializeField, Min(0f)] private float durInv = 0.2f;
+    private Vida vida;
 
     [Header("Efecto de Imagen Residual (Sin Prefab)")]
     [Tooltip("Cuánto tiempo en total estará soltando sombras después de pulsar Dash")]
@@ -58,6 +59,7 @@ public class Jugador : MonoBehaviour
 
     void Awake()
     {
+        TryGetComponent(out vida);
         TryGetComponent(out rb);
         rb.gravityScale = 0f;
 
@@ -86,7 +88,7 @@ public class Jugador : MonoBehaviour
             puedeDashear = false;
             tDash = durDash;
             tCdDash = cdDash;
-            EsInvencible = true;
+            EsInvencible = true; if (vida != null) vida.ActivarInvulnerabilidad(durInv);
             tInv = durInv;
 
             // Iniciamos los temporizadores de las sombras visuales

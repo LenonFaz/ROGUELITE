@@ -181,11 +181,12 @@ public class Enfocado : MonoBehaviour
 
         foreach (var c in golpeados)
         {
-            if (c.TryGetComponent(out Vida vida)) vida.RecibirDanio(1);
-            if (c.TryGetComponent(out Empuje empujeJugador))
+            if (c.TryGetComponent(out Vida vida))
             {
-                empujeJugador.AplicarEmpuje(dirRayo, fuerzaEmpujeLaser);
+                if (vida.EsInvulnerable) continue;
+                vida.RecibirDanio(1);
             }
+            if (c.TryGetComponent(out Empuje e)) e.AplicarEmpuje(dirRayo, fuerzaEmpujeLaser); // en Enfocado: dirRayo, fuerzaEmpujeLaser
         }
     }
 

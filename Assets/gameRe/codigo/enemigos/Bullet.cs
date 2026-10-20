@@ -11,7 +11,7 @@ public class Bullet : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
 
         // Configuramos el Rigidbody por código para evitar errores en el Inspector
-        rb.isKinematic = true;
+        rb.bodyType = RigidbodyType2D.Kinematic;
         rb.gravityScale = 0f;
     }
 
