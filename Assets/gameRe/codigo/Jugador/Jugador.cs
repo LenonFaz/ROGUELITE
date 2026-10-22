@@ -7,6 +7,12 @@ public class Jugador : MonoBehaviour
 {
     [Header("Movimiento")]
     [SerializeField, Min(0f)] private float vel = 6f;
+    private float velOriginal;
+
+    public void CambiarVelocidad(float nuevaVelocidad)
+    {
+        vel = nuevaVelocidad;
+    }
     [SerializeField, Min(0f)] private float acel = 45f;
     [SerializeField, Min(0f)] private float desacel = 60f;
 
@@ -49,7 +55,7 @@ public class Jugador : MonoBehaviour
     private float tDash;
     private float tCdDash;
 
-    private float tGeneracionResidual; // Temporizador independiente para soltar las sombras
+    private float tGeneracionResidual;
     private float tSiguienteResidual;
 
     public bool EsInvencible { get; private set; }
@@ -59,6 +65,7 @@ public class Jugador : MonoBehaviour
 
     void Awake()
     {
+        velOriginal = vel;
         TryGetComponent(out vida);
         TryGetComponent(out rb);
         rb.gravityScale = 0f;
@@ -68,6 +75,11 @@ public class Jugador : MonoBehaviour
 
         if (!anim) TryGetComponent(out anim);
         if (!sprite) TryGetComponent(out sprite);
+    }
+
+    public void RestaurarVelocidad()
+    {
+        vel = velOriginal;
     }
 
     void OnMove(InputValue value)
@@ -91,7 +103,6 @@ public class Jugador : MonoBehaviour
             EsInvencible = true; if (vida != null) vida.ActivarInvulnerabilidad(durInv);
             tInv = durInv;
 
-            // Iniciamos los temporizadores de las sombras visuales
             tGeneracionResidual = duracionGeneracionResidual;
             tSiguienteResidual = 0f;
         }
@@ -102,7 +113,6 @@ public class Jugador : MonoBehaviour
         ActualizarTimers(Time.deltaTime);
         ActualizarAnim();
 
-        // Ahora evaluamos el temporizador independiente, no si está "dasheando"
         if (tGeneracionResidual > 0f)
         {
             ManejarImagenesResiduales(Time.deltaTime);
