@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: a0850284d7a462e489c7fff2580e775b
+guid: 8bcc5c8b4e161474fad95d2b3b669094
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4524098438856935333
-    second: COSA MENU_0
+      213: -3953777840270947585
+    second: Proyecto_20261026025214_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -46,7 +46,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -100,7 +100,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: COSA MENU_0
+      name: Proyecto_20261026025214_0
       rect:
         serializedVersion: 2
         x: 0
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b587807807c2731c0800000000000000
-      internalID: -4524098438856935333
+      spriteID: ffac6d5900c5129c0800000000000000
+      internalID: -3953777840270947585
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      COSA MENU_0: -4524098438856935333
+      Proyecto_20261026025214_0: -3953777840270947585
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
