@@ -14,9 +14,8 @@ public class GestorLuz : MonoBehaviour
     [SerializeField, Min(0f)] private float reduccionPorMuerte = 8f;
 
     public float LuzActual { get; private set; }
-
-    // Devuelve un valor de 0.0 a 1.0 para que la interfaz lo lea fácilmente
     public float PorcentajeLuz => LuzActual / luzMaxima;
+    public bool PlegariaActiva { get; private set; } = false;
 
     private bool juegoTerminado = false;
 
@@ -28,9 +27,8 @@ public class GestorLuz : MonoBehaviour
 
     void Update()
     {
-        if (juegoTerminado) return;
+        if (juegoTerminado || !PlegariaActiva) return;
 
-        // La luz de la sala sube constantemente con el tiempo
         LuzActual += aumentoPorSegundo * Time.deltaTime;
         LuzActual = Mathf.Clamp(LuzActual, 0f, luzMaxima);
 
@@ -39,6 +37,9 @@ public class GestorLuz : MonoBehaviour
             EjecutarVaporizacion();
         }
     }
+
+    public void EstablecerPlegariaActiva(bool activa) => PlegariaActiva = activa;
+    public void ReiniciarLuz() => LuzActual = 0f;
 
     public void RegistrarGolpeAEnemigo() => ModificarLuz(-reduccionPorGolpe);
     public void RegistrarMuerteDeEnemigo() => ModificarLuz(-reduccionPorMuerte);
@@ -53,15 +54,10 @@ public class GestorLuz : MonoBehaviour
     private void EjecutarVaporizacion()
     {
         juegoTerminado = true;
-        Debug.Log("La barra de plegaria se llenó. Vaporizando al jugador...");
-
-        // Buscamos al jugador en la escena mediante su Tag
         GameObject jugador = GameObject.FindGameObjectWithTag("Player");
 
         if (jugador != null && jugador.TryGetComponent(out Vida vidaJugador))
         {
-            // Le aplicamos daño masivo (9999) para saltar toda su armadura o vida extra
-            // y obligar a que su propio script ejecute la función Morir()
             vidaJugador.RecibirDanio(9999);
         }
     }
