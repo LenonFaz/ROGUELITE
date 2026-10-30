@@ -8,7 +8,7 @@ public class Sala : MonoBehaviour
     [Header("Elementos de la Sala")]
     [SerializeField] private List<Vida> enemigos = new List<Vida>();
     [SerializeField] private List<Puerta> puertas = new List<Puerta>();
-    [SerializeField] private bool reiniciarLuzAlEntrar = false;
+    [SerializeField] private bool reiniciarLuzAlEntrar = true;
 
     private Transform jugador;
     private bool jugadorEnSala = false;
