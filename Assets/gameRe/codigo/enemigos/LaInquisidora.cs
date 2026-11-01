@@ -26,14 +26,13 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
     [SerializeField, Min(0f)] private float cdDash = 3f;
     [SerializeField, Min(0f)] private float pausaEntreAtaques = 1.1f;
 
-    [Header("Fase 1: 1. Melee Grande")]
+    [Header("Fase 1: 1. Melee Grande (Hitbox)")]
     [SerializeField, Min(0f)] private float distAcercamientoMelee = 2f;
     [SerializeField, Min(0f)] private float tiempoQuietoAntesMelee = 0.45f;
     [SerializeField] private Vector2 tamHitboxMeleeGrande = new Vector2(3.2f, 2.8f);
     [SerializeField, Min(0f)] private float offsetMeleeGrande = 1.6f;
     [SerializeField, Min(1)] private int danioMeleeGrande = 2;
     [SerializeField, Min(0f)] private float empujeMeleeGrande = 10f;
-    [SerializeField] private GameObject prefabEfectoMeleeGrande;
 
     [Header("Fase 1: 2. Oleadas Radiales ZigZag")]
     [SerializeField, Min(1)] private int cantidadOleadasZigZag = 3;
@@ -49,11 +48,11 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
     [SerializeField, Min(0f)] private float anguloImprecision = 22f;
     [SerializeField, Min(0f)] private float velBalaMetralleta = 10.5f;
 
-    [Header("Fase 1: 4. Super Ataque Melee Largo")]
+    [Header("Fase 1: 4. Super Ataque Melee Largo (Hitbox)")]
     [SerializeField, Min(0f)] private float velMovimientoLento = 0.85f;
     [SerializeField, Min(0f)] private float tiempoCargaSuperMelee = 1.1f;
-    [SerializeField, Min(0f)] private float largoSuperMelee = 7.5f;
-    [SerializeField, Min(0f)] private float anchoSuperMelee = 1.1f;
+    [SerializeField] private Vector2 tamHitboxSuperMelee = new Vector2(7.5f, 1.1f);
+    [SerializeField, Min(0f)] private float offsetSuperMelee = 3.75f;
     [SerializeField, Min(1)] private int danioSuperMelee = 2;
     [SerializeField, Min(0f)] private float empujeSuperMelee = 13f;
     [SerializeField] private Color colorAvisoMeleeLargo = new Color(1f, 0.5f, 0f, 0.45f);
@@ -374,11 +373,6 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         Vector2 centro = (Vector2)transform.position + dirAtaque * offsetMeleeGrande;
         float angulo = Mathf.Atan2(dirAtaque.y, dirAtaque.x) * Mathf.Rad2Deg;
 
-        if (prefabEfectoMeleeGrande != null)
-        {
-            Instantiate(prefabEfectoMeleeGrande, centro, Quaternion.Euler(0f, 0f, angulo));
-        }
-
         AplicarDanioCaja(centro, tamHitboxMeleeGrande, angulo, danioMeleeGrande, dirAtaque, empujeMeleeGrande);
 
         yield return new WaitForSeconds(0.35f);
@@ -459,7 +453,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         lineaGuia.enabled = true;
         lineaGuia.startColor = colorAvisoMeleeLargo;
         lineaGuia.endColor = colorAvisoMeleeLargo;
-        lineaGuia.widthMultiplier = anchoSuperMelee;
+        lineaGuia.widthMultiplier = tamHitboxSuperMelee.y;
 
         while (t > 0f)
         {
@@ -479,8 +473,9 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
             }
 
             velObjetivo = dirApuntado * velMovimientoLento;
+            float distanciaVisual = offsetSuperMelee + (tamHitboxSuperMelee.x * 0.5f);
             lineaGuia.SetPosition(0, transform.position);
-            lineaGuia.SetPosition(1, (Vector2)transform.position + dirApuntado * largoSuperMelee);
+            lineaGuia.SetPosition(1, (Vector2)transform.position + dirApuntado * distanciaVisual);
             yield return null;
         }
 
@@ -490,9 +485,9 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         lineaGuia.startColor = colorImpactoMeleeLargo;
         lineaGuia.endColor = colorImpactoMeleeLargo;
 
-        Vector2 centro = (Vector2)transform.position + dirApuntado * (largoSuperMelee * 0.5f);
+        Vector2 centro = (Vector2)transform.position + dirApuntado * offsetSuperMelee;
         float angulo = Mathf.Atan2(dirApuntado.y, dirApuntado.x) * Mathf.Rad2Deg;
-        AplicarDanioCaja(centro, new Vector2(largoSuperMelee, anchoSuperMelee), angulo, danioSuperMelee, dirApuntado, empujeSuperMelee);
+        AplicarDanioCaja(centro, tamHitboxSuperMelee, angulo, danioSuperMelee, dirApuntado, empujeSuperMelee);
 
         yield return new WaitForSeconds(0.2f);
         lineaGuia.enabled = false;
@@ -804,6 +799,6 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         Gizmos.DrawWireCube((Vector2)transform.position + Vector2.right * offsetMeleeGrande, tamHitboxMeleeGrande);
 
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireCube((Vector2)transform.position + Vector2.right * (largoSuperMelee * 0.5f), new Vector2(largoSuperMelee, anchoSuperMelee));
+        Gizmos.DrawWireCube((Vector2)transform.position + Vector2.right * offsetSuperMelee, tamHitboxSuperMelee);
     }
 }

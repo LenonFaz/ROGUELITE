@@ -1,0 +1,440 @@
+fileFormatVersion: 2
+guid: e214be92edb130547a9aaed7fbbf6914
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -8658677518200546573
+    second: demonspcomb_0
+  - first:
+      213: -7259469727260438457
+    second: demonspcomb_1
+  - first:
+      213: -6012878405159518428
+    second: demonspcomb_2
+  - first:
+      213: 7683096901423442103
+    second: demonspcomb_3
+  - first:
+      213: 1844035550084922723
+    second: demonspcomb_4
+  - first:
+      213: 7852385181804324785
+    second: demonspcomb_5
+  - first:
+      213: 5708836124143967301
+    second: demonspcomb_6
+  - first:
+      213: 2977638013602254527
+    second: demonspcomb_7
+  - first:
+      213: -6725003442398053108
+    second: demonspcomb_8
+  - first:
+      213: -8322218048898936380
+    second: demonspcomb_9
+  - first:
+      213: -6469846516891465861
+    second: demonspcomb_10
+  - first:
+      213: 9016403726071780335
+    second: demonspcomb_11
+  - first:
+      213: 3591445440052834930
+    second: demonspcomb_12
+  - first:
+      213: 8821344195535630947
+    second: demonspcomb_13
+  - first:
+      213: 5984334011883230126
+    second: demonspcomb_14
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 32
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: demonspcomb_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 160
+        width: 90
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3fadefe3ca236d780800000000000000
+      internalID: -8658677518200546573
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: demonspcomb_1
+      rect:
+        serializedVersion: 2
+        x: 90
+        y: 160
+        width: 90
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74090f0debe214b90800000000000000
+      internalID: -7259469727260438457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: demonspcomb_2
+      rect:
+        serializedVersion: 2
+        x: 180
+        y: 160
+        width: 90
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42f79d6b2f6fd8ca0800000000000000
+      internalID: -6012878405159518428
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: demonspcomb_3
+      rect:
+        serializedVersion: 2
+        x: 270
+        y: 160
+        width: 90
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b8af30dce7df9a60800000000000000
+      internalID: 7683096901423442103
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: demonspcomb_4
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 80
+        width: 90
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36df00c0094579910800000000000000
+      internalID: 1844035550084922723
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: demonspcomb_5
+      rect:
+        serializedVersion: 2
+        x: 90
+        y: 80
+        width: 90
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b7ecf818b649fc60800000000000000
+      internalID: 7852385181804324785
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: demonspcomb_6
+      rect:
+        serializedVersion: 2
+        x: 180
+        y: 80
+        width: 90
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54cd48c453cd93f40800000000000000
+      internalID: 5708836124143967301
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: demonspcomb_7
+      rect:
+        serializedVersion: 2
+        x: 270
+        y: 80
+        width: 90
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fbe46764ff1b25920800000000000000
+      internalID: 2977638013602254527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: demonspcomb_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 90
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c0db59eeffcfba2a0800000000000000
+      internalID: -6725003442398053108
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: demonspcomb_9
+      rect:
+        serializedVersion: 2
+        x: 90
+        y: 0
+        width: 90
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c1d80c07ca818c80800000000000000
+      internalID: -8322218048898936380
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: demonspcomb_10
+      rect:
+        serializedVersion: 2
+        x: 180
+        y: 0
+        width: 90
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b77c2612fdc7636a0800000000000000
+      internalID: -6469846516891465861
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: demonspcomb_11
+      rect:
+        serializedVersion: 2
+        x: 270
+        y: 0
+        width: 90
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe3540cfa63b02d70800000000000000
+      internalID: 9016403726071780335
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: c1537210bb39cad4d95b6baeffa3747d
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":4.0,"y":3.0},"gridSpriteSize":{"x":90.0,"y":80.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      demonspcomb_0: -8658677518200546573
+      demonspcomb_1: -7259469727260438457
+      demonspcomb_10: -6469846516891465861
+      demonspcomb_11: 9016403726071780335
+      demonspcomb_2: -6012878405159518428
+      demonspcomb_3: 7683096901423442103
+      demonspcomb_4: 1844035550084922723
+      demonspcomb_5: 7852385181804324785
+      demonspcomb_6: 5708836124143967301
+      demonspcomb_7: 2977638013602254527
+      demonspcomb_8: -6725003442398053108
+      demonspcomb_9: -8322218048898936380
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
