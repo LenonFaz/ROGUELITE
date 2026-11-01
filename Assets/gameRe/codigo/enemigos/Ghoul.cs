@@ -12,9 +12,12 @@ public class Ghoul : MonoBehaviour, IRangoDeteccion
     [SerializeField, Min(0f)] private float desaceleracion = 18f;
     [SerializeField, Min(0f)] private float rangoDeteccion = 5f;
 
-    [Header("Ataque")]
-    [SerializeField, Min(0f)] private float rangoAtaque = 1.3f;
-    [SerializeField, Min(0.05f)] private float tiempoAnticipacion = 0.25f;
+    [Header("Ataque con Impulso")]
+    [SerializeField, Min(0f)] private float rangoAtaque = 1.6f;
+    [SerializeField, Min(0.05f)] private float tiempoQuietoAntes = 0.35f;
+    [SerializeField, Min(0f)] private float velocidadImpulso = 7.5f;
+    [SerializeField, Min(0.05f)] private float duracionImpulso = 0.15f;
+    [SerializeField, Min(0.05f)] private float tiempoQuietoDespues = 0.4f;
     [SerializeField] private Vector2 tamHitbox = new Vector2(1f, 1f);
     [SerializeField] private float offsetHitbox = 0.8f;
     [SerializeField, Min(0f)] private float cooldown = 1f;
@@ -28,10 +31,8 @@ public class Ghoul : MonoBehaviour, IRangoDeteccion
 
     public float RangoDeteccion => rangoDeteccion;
 
-    private static readonly Vector2[] direccionesValidas =
-    {
-        Vector2.up, Vector2.down, Vector2.left, Vector2.right
-    };
+    private enum Estado { Persiguiendo, Preparando, Impulsando, Recuperando }
+    private Estado estadoActual = Estado.Persiguiendo;
 
     private Rigidbody2D rb;
     private Aturdido aturdido;
@@ -39,11 +40,11 @@ public class Ghoul : MonoBehaviour, IRangoDeteccion
     private IndicadorAtaque indicador;
 
     private float timerCooldown;
-    private float timerPrep;
-    private bool preparandose;
+    private float timerEstado;
     private Vector2 direccion = Vector2.down;
-    private Vector2 dirFijada = Vector2.down;
+    private Vector2 dirAtaque = Vector2.down;
     private float distancia;
+    private bool yaGolpeoEnImpulso;
 
     void Awake()
     {
@@ -82,9 +83,9 @@ public class Ghoul : MonoBehaviour, IRangoDeteccion
 
         if (Bloqueado())
         {
-            if (preparandose)
+            if (estadoActual != Estado.Persiguiendo)
             {
-                preparandose = false;
+                estadoActual = Estado.Persiguiendo;
                 indicador.CancelarAviso();
             }
             return;
@@ -94,24 +95,48 @@ public class Ghoul : MonoBehaviour, IRangoDeteccion
         distancia = haciaJugador.magnitude;
         if (distancia > 0.001f) direccion = haciaJugador / distancia;
 
-        if (preparandose)
+        switch (estadoActual)
         {
-            timerPrep -= Time.deltaTime;
-            if (timerPrep <= 0f)
-            {
-                preparandose = false;
-                Atacar(dirFijada);
-                timerCooldown = cooldown;
-            }
-            return;
-        }
+            case Estado.Persiguiendo:
+                if (distancia <= rangoAtaque && timerCooldown <= 0f)
+                {
+                    estadoActual = Estado.Preparando;
+                    timerEstado = tiempoQuietoAntes;
+                    dirAtaque = direccion;
+                    indicador.MostrarAviso(tiempoQuietoAntes);
+                }
+                break;
 
-        if (distancia <= rangoAtaque && timerCooldown <= 0f)
-        {
-            preparandose = true;
-            timerPrep = tiempoAnticipacion;
-            dirFijada = SnapDireccion(direccion);
-            indicador.MostrarAviso(tiempoAnticipacion);
+            case Estado.Preparando:
+                timerEstado -= Time.deltaTime;
+                if (timerEstado <= 0f)
+                {
+                    dirAtaque = direccion;
+                    estadoActual = Estado.Impulsando;
+                    timerEstado = duracionImpulso;
+                    yaGolpeoEnImpulso = false;
+                    ChequearGolpe(dirAtaque);
+                }
+                break;
+
+            case Estado.Impulsando:
+                timerEstado -= Time.deltaTime;
+                ChequearGolpe(dirAtaque);
+                if (timerEstado <= 0f)
+                {
+                    estadoActual = Estado.Recuperando;
+                    timerEstado = tiempoQuietoDespues;
+                }
+                break;
+
+            case Estado.Recuperando:
+                timerEstado -= Time.deltaTime;
+                if (timerEstado <= 0f)
+                {
+                    estadoActual = Estado.Persiguiendo;
+                    timerCooldown = cooldown;
+                }
+                break;
         }
     }
 
@@ -127,32 +152,32 @@ public class Ghoul : MonoBehaviour, IRangoDeteccion
 
         if (empuje != null && empuje.EstaEmpujado) return;
 
-        bool quietoPorAtaque = preparandose || distancia <= rangoAtaque;
-        Vector2 objetivo = (!quietoPorAtaque && distancia <= rangoDeteccion) ? direccion * velocidad : Vector2.zero;
-        float tasa = objetivo != Vector2.zero ? aceleracion : desaceleracion;
-        rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, objetivo, tasa * Time.fixedDeltaTime);
+        switch (estadoActual)
+        {
+            case Estado.Persiguiendo:
+                bool avanzar = distancia <= rangoDeteccion && distancia > rangoAtaque;
+                Vector2 objetivo = avanzar ? direccion * velocidad : Vector2.zero;
+                float tasa = avanzar ? aceleracion : desaceleracion;
+                rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, objetivo, tasa * Time.fixedDeltaTime);
+                break;
+
+            case Estado.Preparando:
+            case Estado.Recuperando:
+                rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, (desaceleracion * 2.5f) * Time.fixedDeltaTime);
+                break;
+
+            case Estado.Impulsando:
+                rb.linearVelocity = dirAtaque * velocidadImpulso;
+                break;
+        }
     }
 
     bool Bloqueado() => (aturdido != null && aturdido.EstaAturdido) || (empuje != null && empuje.EstaEmpujado);
 
-    Vector2 SnapDireccion(Vector2 dir)
+    void ChequearGolpe(Vector2 dir)
     {
-        Vector2 mejor = direccionesValidas[0];
-        float mejorDot = -2f;
-        for (int i = 0; i < direccionesValidas.Length; i++)
-        {
-            float dot = Vector2.Dot(dir, direccionesValidas[i]);
-            if (dot > mejorDot)
-            {
-                mejorDot = dot;
-                mejor = direccionesValidas[i];
-            }
-        }
-        return mejor;
-    }
+        if (yaGolpeoEnImpulso) return;
 
-    void Atacar(Vector2 dir)
-    {
         Vector2 centro = (Vector2)transform.position + dir * offsetHitbox;
         float angulo = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
@@ -166,9 +191,20 @@ public class Ghoul : MonoBehaviour, IRangoDeteccion
             {
                 if (vida.EsInvulnerable) continue;
                 vida.RecibirDanio(danio);
+                yaGolpeoEnImpulso = true;
             }
-            if (c.TryGetComponent(out Empuje e)) e.AplicarEmpuje(dir, fuerzaEmpuje);
+            if (c.TryGetComponent(out Empuje e))
+            {
+                e.AplicarEmpuje(dir, fuerzaEmpuje);
+                yaGolpeoEnImpulso = true;
+            }
         }
+    }
+
+    void OnDisable()
+    {
+        estadoActual = Estado.Persiguiendo;
+        if (indicador != null) indicador.CancelarAviso();
     }
 
     void OnDrawGizmosSelected()
@@ -182,8 +218,10 @@ public class Ghoul : MonoBehaviour, IRangoDeteccion
         Gizmos.DrawWireSphere(transform.position, rangoAtaque);
 
         Gizmos.color = colorHitbox;
-        Vector2 centro = (Vector2)transform.position + direccion * offsetHitbox;
-        Gizmos.matrix = Matrix4x4.TRS(centro, Quaternion.identity, Vector3.one);
+        Vector2 dirGizmo = Application.isPlaying ? dirAtaque : Vector2.down;
+        Vector2 centro = (Vector2)transform.position + dirGizmo * offsetHitbox;
+        float angulo = Mathf.Atan2(dirGizmo.y, dirGizmo.x) * Mathf.Rad2Deg;
+        Gizmos.matrix = Matrix4x4.TRS(centro, Quaternion.Euler(0f, 0f, angulo), Vector3.one);
         Gizmos.DrawWireCube(Vector3.zero, tamHitbox);
     }
 }

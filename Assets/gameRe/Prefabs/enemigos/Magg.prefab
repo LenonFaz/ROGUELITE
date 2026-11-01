@@ -172,6 +172,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Magg
   player: {fileID: 0}
   vel: 1.7
+  velLentaAtaque: 0.65
   acel: 15
   desacel: 7
   rangoDet: 7
@@ -181,7 +182,10 @@ MonoBehaviour:
   puntoDisparo: {fileID: 5217194001481741022}
   cdDisparo: 1.5
   tiempoAnticipacion: 0.5
-  velocidadBala: 8
+  cantidadBalas: 5
+  intervaloEntreBalas: 0.3
+  anguloImprecision: 11
+  velocidadBala: 5
   danioBala: 1
   anim: {fileID: 0}
   sprite: {fileID: 0}
@@ -202,6 +206,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Vida
   vidaMaxima: 3
   esJugador: 0
+  tiempoInvulnerabilidadDanio: 0.6
   AlRecibirDanio:
     m_PersistentCalls:
       m_Calls: []

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -9,17 +10,21 @@ public class Magg : MonoBehaviour, IRangoDeteccion
 
     [Header("Movimiento")]
     [SerializeField, Min(0f)] private float vel = 2.5f;
+    [SerializeField, Min(0f)] private float velLentaAtaque = 0.65f;
     [SerializeField, Min(0f)] private float acel = 15f;
     [SerializeField, Min(0f)] private float desacel = 18f;
     [SerializeField, Min(0f)] private float rangoDet = 8f;
     [SerializeField, Min(0f)] private float distMax = 6f;
     [SerializeField, Min(0f)] private float distMin = 4f;
 
-    [Header("Disparo")]
+    [Header("Disparo Múltiple")]
     [SerializeField] private Bullet prefabBullet;
     [SerializeField] private Transform puntoDisparo;
     [SerializeField, Min(0f)] private float cdDisparo = 1.5f;
     [SerializeField, Min(0f)] private float tiempoAnticipacion = 0.5f;
+    [SerializeField, Min(1)] private int cantidadBalas = 5;
+    [SerializeField, Min(0f)] private float intervaloEntreBalas = 0.08f;
+    [SerializeField, Min(0f)] private float anguloImprecision = 16f;
     [SerializeField, Min(0f)] private float velocidadBala = 8f;
     [SerializeField, Min(1)] private int danioBala = 1;
 
@@ -33,14 +38,16 @@ public class Magg : MonoBehaviour, IRangoDeteccion
     public float RangoDeteccion => rangoDet;
 
     private Rigidbody2D rb;
+    private Collider2D miCol;
     private Aturdido aturdido;
     private Empuje empuje;
     private IndicadorAtaque indicador;
 
     private float tDisparo;
-    private float tPrep;
     private bool preparandose;
+    private bool atacando;
     private string animActual;
+    private Coroutine rutinaAtaque;
 
     void OnValidate()
     {
@@ -50,6 +57,7 @@ public class Magg : MonoBehaviour, IRangoDeteccion
     void Awake()
     {
         TryGetComponent(out rb);
+        TryGetComponent(out miCol);
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
@@ -74,9 +82,9 @@ public class Magg : MonoBehaviour, IRangoDeteccion
             }
         }
 
-        if (player && TryGetComponent(out Collider2D col) && player.TryGetComponent(out Collider2D colP))
+        if (player && miCol && player.TryGetComponent(out Collider2D colP))
         {
-            Physics2D.IgnoreCollision(col, colP, true);
+            Physics2D.IgnoreCollision(miCol, colP, true);
         }
     }
 
@@ -84,35 +92,76 @@ public class Magg : MonoBehaviour, IRangoDeteccion
     {
         if (!player) return;
 
+        if (Mathf.Abs(player.position.x - transform.position.x) > 0.1f)
+        {
+            sprite.flipX = player.position.x < transform.position.x;
+        }
+
         if (Bloqueado())
         {
-            if (preparandose)
-            {
-                preparandose = false;
-                indicador.CancelarAviso();
-            }
+            CancelarAtaqueActual();
             return;
         }
 
-        if (preparandose)
-        {
-            tPrep -= Time.deltaTime;
-            if (tPrep <= 0f)
-            {
-                Disparar();
-                preparandose = false;
-                tDisparo = cdDisparo;
-            }
-            return;
-        }
+        if (preparandose || atacando) return;
 
         tDisparo -= Time.deltaTime;
 
         if (tDisparo <= 0f && Vector2.Distance(transform.position, player.position) <= rangoDet)
         {
-            preparandose = true;
-            tPrep = tiempoAnticipacion;
-            indicador.MostrarAviso(tiempoAnticipacion);
+            rutinaAtaque = StartCoroutine(SecuenciaAtaque());
+        }
+    }
+
+    private IEnumerator SecuenciaAtaque()
+    {
+        preparandose = true;
+        indicador.MostrarAviso(tiempoAnticipacion);
+
+        yield return new WaitForSeconds(tiempoAnticipacion);
+
+        if (Bloqueado())
+        {
+            CancelarAtaqueActual();
+            yield break;
+        }
+
+        preparandose = false;
+        atacando = true;
+
+        for (int i = 0; i < cantidadBalas; i++)
+        {
+            if (Bloqueado() || !player)
+            {
+                CancelarAtaqueActual();
+                yield break;
+            }
+
+            DispararBalaImprecisa();
+
+            if (i < cantidadBalas - 1 && intervaloEntreBalas > 0f)
+            {
+                yield return new WaitForSeconds(intervaloEntreBalas);
+            }
+        }
+
+        atacando = false;
+        tDisparo = cdDisparo;
+        rutinaAtaque = null;
+    }
+
+    private void CancelarAtaqueActual()
+    {
+        if (rutinaAtaque != null)
+        {
+            StopCoroutine(rutinaAtaque);
+            rutinaAtaque = null;
+        }
+        if (preparandose || atacando)
+        {
+            preparandose = false;
+            atacando = false;
+            indicador.CancelarAviso();
         }
     }
 
@@ -130,33 +179,30 @@ public class Magg : MonoBehaviour, IRangoDeteccion
         if (empuje != null && empuje.EstaEmpujado) return;
 
         Vector2 obj = Vector2.zero;
+        Vector2 hacia = player.position - transform.position;
+        float dist = hacia.magnitude;
+        Vector2 dir = dist > 0.001f ? hacia / dist : Vector2.zero;
 
-        if (preparandose)
-        {
-            rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, (desacel * 2f) * Time.fixedDeltaTime);
-        }
-        else
-        {
-            Vector2 hacia = player.position - transform.position;
-            float dist = hacia.magnitude;
-            Vector2 dir = dist > 0.001f ? hacia / dist : Vector2.zero;
+        bool enAccionAtaque = preparandose || atacando;
+        float velActual = enAccionAtaque ? velLentaAtaque : vel;
 
-            if (dist <= rangoDet)
+        if (dist <= rangoDet)
+        {
+            if (dist >= distMin && dist <= distMax)
             {
-                if (dist >= distMin && dist <= distMax)
-                {
-                    rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, (desacel * 2f) * Time.fixedDeltaTime);
-                }
-                else
-                {
-                    obj = dist > distMax ? dir * vel : -dir * vel;
-                    rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, obj, acel * Time.fixedDeltaTime);
-                }
+                obj = enAccionAtaque ? dir * (velLentaAtaque * 0.5f) : Vector2.zero;
+                float tasaFreno = enAccionAtaque ? acel : desacel * 2f;
+                rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, obj, tasaFreno * Time.fixedDeltaTime);
             }
             else
             {
-                rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, desacel * Time.fixedDeltaTime);
+                obj = dist > distMax ? dir * velActual : -dir * velActual;
+                rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, obj, acel * Time.fixedDeltaTime);
             }
+        }
+        else
+        {
+            rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, desacel * Time.fixedDeltaTime);
         }
 
         ActualizarAnim(obj);
@@ -168,11 +214,11 @@ public class Magg : MonoBehaviour, IRangoDeteccion
 
         AnimationClip clipObj = aIdle;
 
-        if (preparandose)
+        if (preparandose || atacando)
         {
-            clipObj = aAtacar;
+            clipObj = aAtacar != null ? aAtacar : aMover;
         }
-        else if (velObj != Vector2.zero || rb.linearVelocity.sqrMagnitude > 0.1f)
+        else if (velObj != Vector2.zero || rb.linearVelocity.sqrMagnitude > 0.05f)
         {
             clipObj = aMover;
         }
@@ -186,21 +232,29 @@ public class Magg : MonoBehaviour, IRangoDeteccion
 
     bool Bloqueado() => (aturdido != null && aturdido.EstaAturdido) || (empuje != null && empuje.EstaEmpujado);
 
-    void Disparar()
+    void DispararBalaImprecisa()
     {
         if (!prefabBullet || !player) return;
 
         Vector3 pos = puntoDisparo ? puntoDisparo.position : transform.position;
-        Vector2 dirBala = (player.position - pos).normalized;
+        Vector2 haciaJugador = ((Vector2)player.position - (Vector2)pos).normalized;
+        float anguloBase = Mathf.Atan2(haciaJugador.y, haciaJugador.x) * Mathf.Rad2Deg;
+        float anguloDesviado = (anguloBase + Random.Range(-anguloImprecision, anguloImprecision)) * Mathf.Deg2Rad;
+        Vector2 dirBala = new Vector2(Mathf.Cos(anguloDesviado), Mathf.Sin(anguloDesviado));
 
         Bullet b = Instantiate(prefabBullet, pos, Quaternion.identity);
 
-        if (TryGetComponent(out Collider2D miCol) && b.TryGetComponent(out Collider2D balaCol))
+        if (miCol != null && b.TryGetComponent(out Collider2D balaCol))
         {
             Physics2D.IgnoreCollision(miCol, balaCol, true);
         }
 
         b.Init(dirBala, velocidadBala, danioBala, 5f);
+    }
+
+    void OnDisable()
+    {
+        CancelarAtaqueActual();
     }
 
     void OnDrawGizmosSelected()
