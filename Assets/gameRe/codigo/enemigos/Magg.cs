@@ -2,7 +2,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(SpriteRenderer))]
-public class Magg : MonoBehaviour
+public class Magg : MonoBehaviour, IRangoDeteccion
 {
     [Header("Referencias")]
     [SerializeField] private Transform player;
@@ -30,9 +30,12 @@ public class Magg : MonoBehaviour
     [SerializeField] private AnimationClip aMover;
     [SerializeField] private AnimationClip aAtacar;
 
+    public float RangoDeteccion => rangoDet;
+
     private Rigidbody2D rb;
     private Aturdido aturdido;
     private Empuje empuje;
+    private IndicadorAtaque indicador;
 
     private float tDisparo;
     private float tPrep;
@@ -53,28 +56,43 @@ public class Magg : MonoBehaviour
 
         TryGetComponent(out aturdido);
         TryGetComponent(out empuje);
+        if (!TryGetComponent(out indicador)) indicador = gameObject.AddComponent<IndicadorAtaque>();
 
         if (!anim) TryGetComponent(out anim);
         if (!sprite) TryGetComponent(out sprite);
+    }
 
+    void Start()
+    {
         if (!player)
         {
-            var p = GameObject.FindGameObjectWithTag("Player");
-            if (p) player = p.transform;
+            if (Jugador.Instancia != null) player = Jugador.Instancia.transform;
+            else
+            {
+                GameObject p = GameObject.FindGameObjectWithTag("Player");
+                if (p) player = p.transform;
+            }
         }
 
-        if (player)
+        if (player && TryGetComponent(out Collider2D col) && player.TryGetComponent(out Collider2D colP))
         {
-            if (TryGetComponent(out Collider2D col) && player.TryGetComponent(out Collider2D colP))
-            {
-                Physics2D.IgnoreCollision(col, colP, true);
-            }
+            Physics2D.IgnoreCollision(col, colP, true);
         }
     }
 
     void Update()
     {
         if (!player) return;
+
+        if (Bloqueado())
+        {
+            if (preparandose)
+            {
+                preparandose = false;
+                indicador.CancelarAviso();
+            }
+            return;
+        }
 
         if (preparandose)
         {
@@ -92,11 +110,9 @@ public class Magg : MonoBehaviour
 
         if (tDisparo <= 0f && Vector2.Distance(transform.position, player.position) <= rangoDet)
         {
-            if (!Bloqueado())
-            {
-                preparandose = true;
-                tPrep = tiempoAnticipacion;
-            }
+            preparandose = true;
+            tPrep = tiempoAnticipacion;
+            indicador.MostrarAviso(tiempoAnticipacion);
         }
     }
 
@@ -123,21 +139,17 @@ public class Magg : MonoBehaviour
         {
             Vector2 hacia = player.position - transform.position;
             float dist = hacia.magnitude;
-            Vector2 dir = hacia != Vector2.zero ? hacia.normalized : Vector2.zero;
+            Vector2 dir = dist > 0.001f ? hacia / dist : Vector2.zero;
 
             if (dist <= rangoDet)
             {
-                bool enZonaIdeal = (dist >= distMin && dist <= distMax);
-
-                if (enZonaIdeal)
+                if (dist >= distMin && dist <= distMax)
                 {
                     rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, (desacel * 2f) * Time.fixedDeltaTime);
                 }
                 else
                 {
-                    if (dist > distMax) obj = dir * vel;
-                    else if (dist < distMin) obj = -dir * vel;
-
+                    obj = dist > distMax ? dir * vel : -dir * vel;
                     rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, obj, acel * Time.fixedDeltaTime);
                 }
             }
@@ -176,7 +188,7 @@ public class Magg : MonoBehaviour
 
     void Disparar()
     {
-        if (!prefabBullet) return;
+        if (!prefabBullet || !player) return;
 
         Vector3 pos = puntoDisparo ? puntoDisparo.position : transform.position;
         Vector2 dirBala = (player.position - pos).normalized;
@@ -188,7 +200,6 @@ public class Magg : MonoBehaviour
             Physics2D.IgnoreCollision(miCol, balaCol, true);
         }
 
-        // Esta es la línea actualizada que conecta con tu nuevo Bullet.cs modular
         b.Init(dirBala, velocidadBala, danioBala, 5f);
     }
 

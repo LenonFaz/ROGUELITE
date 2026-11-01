@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class Ghoul : MonoBehaviour
+public class Ghoul : MonoBehaviour, IRangoDeteccion
 {
     [Header("Referencias")]
     [SerializeField] private Transform jugador;
@@ -14,6 +14,7 @@ public class Ghoul : MonoBehaviour
 
     [Header("Ataque")]
     [SerializeField, Min(0f)] private float rangoAtaque = 1.3f;
+    [SerializeField, Min(0.05f)] private float tiempoAnticipacion = 0.25f;
     [SerializeField] private Vector2 tamHitbox = new Vector2(1f, 1f);
     [SerializeField] private float offsetHitbox = 0.8f;
     [SerializeField, Min(0f)] private float cooldown = 1f;
@@ -25,6 +26,8 @@ public class Ghoul : MonoBehaviour
     [SerializeField] private bool mostrarGizmo = true;
     [SerializeField] private Color colorHitbox = new Color(1f, 0.4f, 0f);
 
+    public float RangoDeteccion => rangoDeteccion;
+
     private static readonly Vector2[] direccionesValidas =
     {
         Vector2.up, Vector2.down, Vector2.left, Vector2.right
@@ -33,31 +36,42 @@ public class Ghoul : MonoBehaviour
     private Rigidbody2D rb;
     private Aturdido aturdido;
     private Empuje empuje;
+    private IndicadorAtaque indicador;
 
-    private float timerCooldown = 0f;
-    private bool atacando = false;
+    private float timerCooldown;
+    private float timerPrep;
+    private bool preparandose;
     private Vector2 direccion = Vector2.down;
+    private Vector2 dirFijada = Vector2.down;
     private float distancia;
 
     void Awake()
     {
         TryGetComponent(out rb);
+        rb.gravityScale = 0f;
+        rb.freezeRotation = true;
+        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+
         TryGetComponent(out aturdido);
         TryGetComponent(out empuje);
+        if (!TryGetComponent(out indicador)) indicador = gameObject.AddComponent<IndicadorAtaque>();
+    }
 
+    void Start()
+    {
         if (jugador == null)
         {
-            var p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) jugador = p.transform;
+            if (Jugador.Instancia != null) jugador = Jugador.Instancia.transform;
+            else
+            {
+                GameObject p = GameObject.FindGameObjectWithTag("Player");
+                if (p != null) jugador = p.transform;
+            }
         }
 
-        // Ignorar colisiones físicas
-        if (jugador != null)
+        if (jugador != null && TryGetComponent(out Collider2D colPropio) && jugador.TryGetComponent(out Collider2D colJugador))
         {
-            if (TryGetComponent(out Collider2D colPropio) && jugador.TryGetComponent(out Collider2D colJugador))
-            {
-                Physics2D.IgnoreCollision(colPropio, colJugador, true);
-            }
+            Physics2D.IgnoreCollision(colPropio, colJugador, true);
         }
     }
 
@@ -66,28 +80,38 @@ public class Ghoul : MonoBehaviour
         timerCooldown -= Time.deltaTime;
         if (jugador == null) return;
 
-        Vector2 haciaJugador = jugador.position - transform.position;
-        distancia = haciaJugador.magnitude;
-        if (haciaJugador != Vector2.zero) direccion = haciaJugador.normalized;
-
-        if (Bloqueado() || distancia > rangoDeteccion)
+        if (Bloqueado())
         {
-            atacando = false;
+            if (preparandose)
+            {
+                preparandose = false;
+                indicador.CancelarAviso();
+            }
             return;
         }
 
-        if (distancia <= rangoAtaque)
+        Vector2 haciaJugador = jugador.position - transform.position;
+        distancia = haciaJugador.magnitude;
+        if (distancia > 0.001f) direccion = haciaJugador / distancia;
+
+        if (preparandose)
         {
-            atacando = true;
-            if (timerCooldown <= 0f)
+            timerPrep -= Time.deltaTime;
+            if (timerPrep <= 0f)
             {
-                Atacar(SnapDireccion(direccion));
+                preparandose = false;
+                Atacar(dirFijada);
                 timerCooldown = cooldown;
             }
+            return;
         }
-        else
+
+        if (distancia <= rangoAtaque && timerCooldown <= 0f)
         {
-            atacando = false;
+            preparandose = true;
+            timerPrep = tiempoAnticipacion;
+            dirFijada = SnapDireccion(direccion);
+            indicador.MostrarAviso(tiempoAnticipacion);
         }
     }
 
@@ -103,12 +127,8 @@ public class Ghoul : MonoBehaviour
 
         if (empuje != null && empuje.EstaEmpujado) return;
 
-        Vector2 objetivo = Vector2.zero;
-        if (!atacando && distancia <= rangoDeteccion)
-        {
-            objetivo = direccion * velocidad;
-        }
-
+        bool quietoPorAtaque = preparandose || distancia <= rangoAtaque;
+        Vector2 objetivo = (!quietoPorAtaque && distancia <= rangoDeteccion) ? direccion * velocidad : Vector2.zero;
         float tasa = objetivo != Vector2.zero ? aceleracion : desaceleracion;
         rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, objetivo, tasa * Time.fixedDeltaTime);
     }
@@ -119,10 +139,14 @@ public class Ghoul : MonoBehaviour
     {
         Vector2 mejor = direccionesValidas[0];
         float mejorDot = -2f;
-        foreach (var d in direccionesValidas)
+        for (int i = 0; i < direccionesValidas.Length; i++)
         {
-            float dot = Vector2.Dot(dir, d);
-            if (dot > mejorDot) { mejorDot = dot; mejor = d; }
+            float dot = Vector2.Dot(dir, direccionesValidas[i]);
+            if (dot > mejorDot)
+            {
+                mejorDot = dot;
+                mejor = direccionesValidas[i];
+            }
         }
         return mejor;
     }
@@ -133,8 +157,11 @@ public class Ghoul : MonoBehaviour
         float angulo = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
         Collider2D[] golpeados = Physics2D.OverlapBoxAll(centro, tamHitbox, angulo, capaJugador);
-        foreach (var c in golpeados)
+        for (int i = 0; i < golpeados.Length; i++)
         {
+            Collider2D c = golpeados[i];
+            if (c.TryGetComponent(out Jugador jug) && jug.EsInvulnerablePorDash) continue;
+
             if (c.TryGetComponent(out Vida vida))
             {
                 if (vida.EsInvulnerable) continue;

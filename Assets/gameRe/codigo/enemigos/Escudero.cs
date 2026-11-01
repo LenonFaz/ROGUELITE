@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class Escudero : MonoBehaviour
+public class Escudero : MonoBehaviour, IRangoDeteccion
 {
     [Header("Referencias")]
     [SerializeField] private Transform player;
@@ -24,12 +24,15 @@ public class Escudero : MonoBehaviour
     [SerializeField, Min(0f)] private float fuerzaEmpuje = 8f;
     [SerializeField] private LayerMask capaJugador;
 
+    public float RangoDeteccion => rangoDet;
+
     private enum Estado { Acercando, Aviso, Cargando, Recuperando }
     private Estado estado = Estado.Acercando;
 
     private Rigidbody2D rb;
     private Aturdido aturdido;
     private Empuje empuje;
+    private IndicadorAtaque indicador;
     private float timer;
     private Vector2 dirCarga;
     private bool golpeo;
@@ -39,16 +42,29 @@ public class Escudero : MonoBehaviour
         TryGetComponent(out rb);
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
+        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+
         TryGetComponent(out aturdido);
         TryGetComponent(out empuje);
+        if (!TryGetComponent(out indicador)) indicador = gameObject.AddComponent<IndicadorAtaque>();
+    }
 
+    void Start()
+    {
         if (!player)
         {
-            var p = GameObject.FindGameObjectWithTag("Player");
-            if (p) player = p.transform;
+            if (Jugador.Instancia != null) player = Jugador.Instancia.transform;
+            else
+            {
+                GameObject p = GameObject.FindGameObjectWithTag("Player");
+                if (p) player = p.transform;
+            }
         }
+
         if (player && TryGetComponent(out Collider2D c) && player.TryGetComponent(out Collider2D cp))
+        {
             Physics2D.IgnoreCollision(c, cp, true);
+        }
     }
 
     bool Bloqueado() => (aturdido != null && aturdido.EstaAturdido) || (empuje != null && empuje.EstaEmpujado);
@@ -60,6 +76,7 @@ public class Escudero : MonoBehaviour
         if (Bloqueado() && estado != Estado.Acercando)
         {
             estado = Estado.Acercando;
+            indicador.CancelarAviso();
             return;
         }
 
@@ -73,6 +90,7 @@ public class Escudero : MonoBehaviour
                 {
                     estado = Estado.Aviso;
                     timer = tiempoAviso;
+                    indicador.MostrarAviso(tiempoAviso);
                 }
                 break;
 
@@ -111,8 +129,9 @@ public class Escudero : MonoBehaviour
         {
             case Estado.Acercando:
                 Vector2 hacia = (Vector2)player.position - (Vector2)transform.position;
-                bool avanzar = hacia.magnitude <= rangoDet && hacia.magnitude > distCarga;
-                Vector2 obj = avanzar ? hacia.normalized * vel : Vector2.zero;
+                float dist = hacia.magnitude;
+                bool avanzar = dist <= rangoDet && dist > distCarga;
+                Vector2 obj = avanzar ? (hacia / dist) * vel : Vector2.zero;
                 float tasa = avanzar ? acel : desacel;
                 rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, obj, tasa * Time.fixedDeltaTime);
                 break;
@@ -123,7 +142,6 @@ public class Escudero : MonoBehaviour
                 break;
 
             case Estado.Cargando:
-                // Ligero desvío hacia el jugador
                 Vector2 haciaP = ((Vector2)player.position - (Vector2)transform.position).normalized;
                 float a = Mathf.MoveTowardsAngle(
                     Mathf.Atan2(dirCarga.y, dirCarga.x) * Mathf.Rad2Deg,
@@ -139,12 +157,14 @@ public class Escudero : MonoBehaviour
     void GolpearJugador()
     {
         if (golpeo) return;
-        var hit = Physics2D.OverlapCircle(transform.position, radioGolpe, capaJugador);
+        Collider2D hit = Physics2D.OverlapCircle(transform.position, radioGolpe, capaJugador);
         if (!hit) return;
+
+        if (hit.TryGetComponent(out Jugador jug) && jug.EsInvulnerablePorDash) return;
 
         if (hit.TryGetComponent(out Vida v))
         {
-            if (v.EsInvulnerable) return;   // el dash lo atraviesa
+            if (v.EsInvulnerable) return;
             v.RecibirDanio(danio);
         }
         if (hit.TryGetComponent(out Empuje e)) e.AplicarEmpuje(dirCarga, fuerzaEmpuje);
@@ -159,8 +179,10 @@ public class Escudero : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D col)
     {
-        if (estado == Estado.Cargando && col.gameObject.CompareTag("Pared"))
+        if (estado == Estado.Cargando && (string.Equals(col.gameObject.tag, "pared", System.StringComparison.OrdinalIgnoreCase) || string.Equals(col.gameObject.tag, "hueco", System.StringComparison.OrdinalIgnoreCase)))
+        {
             IniciarRecuperacion();
+        }
     }
 
     void OnDrawGizmosSelected()

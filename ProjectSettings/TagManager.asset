@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Puerta
   - pared
+  - hueco
   layers:
   - Default
   - TransparentFX

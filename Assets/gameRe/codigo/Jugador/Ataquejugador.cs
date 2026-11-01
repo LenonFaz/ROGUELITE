@@ -14,7 +14,7 @@ public class AtaqueJugador : MonoBehaviour
     [Header("Animación y Efectos")]
     [SerializeField] private Animator animJugador;
     [SerializeField] private SpriteRenderer spriteJugador;
-    [SerializeField, Min(0f)] private float duracionAnimAtaque = 0.2f; // Lo que dura el jugador en pose de ataque
+    [SerializeField, Min(0f)] private float duracionAnimAtaque = 0.2f;
     [SerializeField] private AnimationClip aAtkUp;
     [SerializeField] private AnimationClip aAtkDown;
     [SerializeField] private AnimationClip aAtkRight;
@@ -22,15 +22,15 @@ public class AtaqueJugador : MonoBehaviour
 
     public bool EstaAtacando { get; private set; }
 
-    private float timerCooldown = 0f;
-    private float timerAtaque = 0f;
+    private float timerCooldown;
+    private float timerAtaque;
     private Vector2 ultimaDireccion = Vector2.down;
     private Vector2 inputAtaque;
 
     void Awake()
     {
-        if (!animJugador) TryGetComponent(out animJugador);
-        if (!spriteJugador) TryGetComponent(out spriteJugador);
+        if (!animJugador) animJugador = GetComponentInChildren<Animator>();
+        if (!spriteJugador) spriteJugador = GetComponentInChildren<SpriteRenderer>();
     }
 
     void OnLook(InputValue value)
@@ -50,14 +50,13 @@ public class AtaqueJugador : MonoBehaviour
 
         if (inputAtaque != Vector2.zero && timerCooldown <= 0f)
         {
-            // Forzar el vector a 4 direcciones exactas para la animación
-            Vector2 dirRígida = inputAtaque.normalized;
-            if (Mathf.Abs(dirRígida.x) > Mathf.Abs(dirRígida.y))
-                dirRígida = dirRígida.x > 0 ? Vector2.right : Vector2.left;
+            Vector2 dirRigida = inputAtaque.normalized;
+            if (Mathf.Abs(dirRigida.x) > Mathf.Abs(dirRigida.y))
+                dirRigida = dirRigida.x > 0f ? Vector2.right : Vector2.left;
             else
-                dirRígida = dirRígida.y > 0 ? Vector2.up : Vector2.down;
+                dirRigida = dirRigida.y > 0f ? Vector2.up : Vector2.down;
 
-            Atacar(dirRígida);
+            Atacar(dirRigida);
             timerCooldown = cooldown;
         }
     }
@@ -76,8 +75,9 @@ public class AtaqueJugador : MonoBehaviour
         float angulo = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         Collider2D[] golpeados = Physics2D.OverlapBoxAll(centro, tamHitbox, angulo, capaEnemigos);
 
-        foreach (var c in golpeados)
+        for (int i = 0; i < golpeados.Length; i++)
         {
+            Collider2D c = golpeados[i];
             if (c.TryGetComponent(out Vida vida)) vida.RecibirDanio(danio);
             if (c.TryGetComponent(out Empuje empuje)) empuje.AplicarEmpuje(dir, fuerzaEmpuje);
             if (c.TryGetComponent(out Aturdido aturdido)) aturdido.Aturdir();
@@ -93,17 +93,16 @@ public class AtaqueJugador : MonoBehaviour
         if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
         {
             clipAtk = aAtkRight;
-            spriteJugador.flipX = dir.x < 0; // Si ataca a la izquierda, voltea el sprite
+            spriteJugador.flipX = dir.x < 0f;
         }
         else
         {
-            clipAtk = dir.y > 0 ? aAtkUp : aAtkDown;
+            clipAtk = dir.y > 0f ? aAtkUp : aAtkDown;
             spriteJugador.flipX = false;
         }
 
         if (clipAtk)
         {
-            // El 0f al final fuerza a que la animación inicie desde el frame 0 siempre
             animJugador.Play(clipAtk.name, -1, 0f);
         }
     }
@@ -112,9 +111,8 @@ public class AtaqueJugador : MonoBehaviour
     {
         if (!prefabEfectoGolpe) return;
 
-        // Rota el efecto visual para que mire hacia donde atacaste
         float anguloEfecto = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-        Instantiate(prefabEfectoGolpe, pos, Quaternion.Euler(0, 0, anguloEfecto));
+        Instantiate(prefabEfectoGolpe, pos, Quaternion.Euler(0f, 0f, anguloEfecto));
     }
 
     void OnDrawGizmosSelected()

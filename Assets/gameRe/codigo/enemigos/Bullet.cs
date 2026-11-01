@@ -2,144 +2,195 @@ using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
 [RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(SpriteRenderer))]
-[RequireComponent(typeof(TrailRenderer))]
-[RequireComponent(typeof(Light2D))]
+[RequireComponent(typeof(Collider2D))]
 public class Bullet : MonoBehaviour
 {
-    [Header("Trail (Estela)")]
-    [SerializeField, Min(0f)] private float duracionTrail = 0.2f;
-    [SerializeField, Min(0f)] private float grosorInicial = 0.25f;
-    [SerializeField] private Color colorTrail = new Color(1f, 0.6f, 0.1f, 0.8f);
+    [Header("Estadísticas del Proyectil")]
+    [SerializeField] private float velocidad = 10f;
+    [SerializeField] private int danio = 1;
+    [SerializeField] private float tiempoVida = 4f;
+    [SerializeField] private float fuerzaEmpuje = 4f;
 
-    [Header("Brillo y Luz")]
-    [SerializeField] private Color colorLuz = new Color(1f, 0.7f, 0.2f, 0.75f);
-    [SerializeField, Min(0f)] private float intensidadLuz = 3f;
-    [SerializeField, Min(0f)] private float radioLuz = 1.8f;
+    [Header("Objetivos y Terreno")]
+    [SerializeField] private string tagObjetivo = "Player";
+    [SerializeField] private string tagPared = "pared";
+    [SerializeField] private string tagHueco = "hueco";
 
-    private int danio;
+    [Header("Efectos Visuales (Trail y Luz)")]
+    [SerializeField] private bool activarTrail = true;
+    [SerializeField] private float duracionTrail = 0.18f;
+    [SerializeField] private float anchoTrail = 0.22f;
+    [SerializeField] private Color colorTrailInicio = new Color(1f, 0.35f, 0.35f, 0.85f);
+    [SerializeField] private Color colorTrailFin = new Color(1f, 0.1f, 0.1f, 0f);
+    [SerializeField] private bool activarLuz = true;
+    [SerializeField] private Color colorLuz = new Color(1f, 0.25f, 0.25f, 1f);
+    [SerializeField] private float radioLuz = 1.6f;
+    [SerializeField] private float intensidadLuz = 1.2f;
+
+    private static Material materialTrailCompartido;
+
     private Rigidbody2D rb;
-    private SpriteRenderer sr;
-    private TrailRenderer tr;
-    private Light2D luz;
-
-    private static Sprite spriteHalo;
-    private static Material matAditivo;
-    private static Material matUnlit;
+    private Collider2D miCollider;
+    private Vector2 direccion;
+    private bool direccionAsignada;
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
-        rb.bodyType = RigidbodyType2D.Kinematic;
+        TryGetComponent(out rb);
+        TryGetComponent(out miCollider);
+
         rb.gravityScale = 0f;
+        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
-        sr = GetComponent<SpriteRenderer>();
-
-        if (!TryGetComponent(out tr)) tr = gameObject.AddComponent<TrailRenderer>();
-        if (!TryGetComponent(out luz)) luz = gameObject.AddComponent<Light2D>();
-
-        InicializarRecursosBrillo();
-
-        sr.sharedMaterial = matUnlit;
-
-        tr.time = duracionTrail;
-        tr.startWidth = grosorInicial;
-        tr.endWidth = 0f;
-        tr.startColor = colorTrail;
-        tr.endColor = new Color(colorTrail.r, colorTrail.g, colorTrail.b, 0f);
-        tr.sharedMaterial = matAditivo;
-        tr.sortingLayerID = sr.sortingLayerID;
-        tr.sortingOrder = sr.sortingOrder - 1;
-
-        luz.lightType = Light2D.LightType.Point;
-        luz.color = new Color(colorLuz.r, colorLuz.g, colorLuz.b, 1f);
-        luz.intensity = intensidadLuz;
-        luz.pointLightInnerRadius = 0f;
-        luz.pointLightOuterRadius = radioLuz;
-        luz.overlapOperation = Light2D.OverlapOperation.Additive;
-
-        CrearHaloVisual();
+        ConfigurarEfectosVisuales();
     }
 
-    private void InicializarRecursosBrillo()
+    void Start()
     {
-        if (matUnlit == null)
+        Destroy(gameObject, tiempoVida);
+
+        if (!direccionAsignada)
         {
-            Shader sUnlit = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
-            if (sUnlit == null) sUnlit = Shader.Find("Sprites/Default");
-            matUnlit = new Material(sUnlit);
+            rb.linearVelocity = (Vector2)transform.right * velocidad;
+        }
+    }
+
+    private void ConfigurarEfectosVisuales()
+    {
+        if (TryGetComponent(out SpriteRenderer sr) && sr.sharedMaterial == null)
+        {
+            Shader s = Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default") ?? Shader.Find("Sprites/Default");
+            if (s != null) sr.sharedMaterial = new Material(s);
         }
 
-        if (matAditivo == null)
+        if (activarTrail)
         {
-            Shader s = Shader.Find("Legacy Shaders/Particles/Additive");
-            if (s == null) s = Shader.Find("Sprites/Default");
-            matAditivo = new Material(s);
-        }
-
-        if (spriteHalo == null)
-        {
-            int res = 64;
-            Texture2D tex = new Texture2D(res, res, TextureFormat.RGBA32, false);
-            tex.wrapMode = TextureWrapMode.Clamp;
-            Vector2 centro = new Vector2(res * 0.5f, res * 0.5f);
-            float maxDist = res * 0.5f;
-
-            for (int y = 0; y < res; y++)
+            if (!TryGetComponent(out TrailRenderer tr))
             {
-                for (int x = 0; x < res; x++)
+                tr = gameObject.AddComponent<TrailRenderer>();
+            }
+
+            if (materialTrailCompartido == null)
+            {
+                Shader shaderValido = Shader.Find("Sprites/Default") ?? Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+                if (shaderValido != null)
                 {
-                    float d = Vector2.Distance(new Vector2(x, y), centro) / maxDist;
-                    float a = Mathf.Clamp01(1f - d);
-                    a = a * a;
-                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                    materialTrailCompartido = new Material(shaderValido);
                 }
             }
-            tex.Apply();
-            spriteHalo = Sprite.Create(tex, new Rect(0, 0, res, res), new Vector2(0.5f, 0.5f), 32f);
+
+            if (tr.sharedMaterial == null || tr.sharedMaterial.shader == null || tr.sharedMaterial.shader.name == "Hidden/InternalErrorShader")
+            {
+                tr.sharedMaterial = materialTrailCompartido;
+            }
+
+            tr.time = duracionTrail;
+            tr.startWidth = anchoTrail;
+            tr.endWidth = 0f;
+            tr.startColor = colorTrailInicio;
+            tr.endColor = colorTrailFin;
+            tr.numCapVertices = 2;
+            tr.sortingOrder = sr != null ? sr.sortingOrder - 1 : 0;
+        }
+
+        if (activarLuz)
+        {
+            if (!TryGetComponent(out Light2D luz))
+            {
+                luz = gameObject.AddComponent<Light2D>();
+            }
+            luz.lightType = Light2D.LightType.Point;
+            luz.color = colorLuz;
+            luz.pointLightOuterRadius = radioLuz;
+            luz.intensity = intensidadLuz;
+            luz.shadowsEnabled = false;
         }
     }
 
-    private void CrearHaloVisual()
-    {
-        GameObject halo = new GameObject("HaloBrillo");
-        halo.transform.SetParent(transform, false);
-        halo.transform.localPosition = Vector3.zero;
-        halo.transform.localScale = Vector3.one * radioLuz;
+    public void Init(Vector2 dir) => ConfigurarBala(dir, velocidad, danio, tiempoVida);
+    public void Init(Vector2 dir, float vel) => ConfigurarBala(dir, vel, danio, tiempoVida);
+    public void Init(Vector2 dir, float vel, int dmg) => ConfigurarBala(dir, vel, dmg, tiempoVida);
+    public void Init(Vector2 dir, float vel, float vida) => ConfigurarBala(dir, vel, danio, vida);
+    public void Init(Vector2 dir, float vel, int dmg, float vida) => ConfigurarBala(dir, vel, dmg, vida);
 
-        SpriteRenderer srHalo = halo.AddComponent<SpriteRenderer>();
-        srHalo.sprite = spriteHalo;
-        srHalo.color = colorLuz;
-        srHalo.sharedMaterial = matAditivo;
-        srHalo.sortingLayerID = sr.sortingLayerID;
-        srHalo.sortingOrder = sr.sortingOrder - 1;
+    public void Inicializar(Vector2 dir, float vel = -1f, int dmg = -1)
+    {
+        ConfigurarBala(dir, vel > 0f ? vel : velocidad, dmg >= 0 ? dmg : danio, tiempoVida);
     }
 
-    public void Init(Vector2 direccion, float velocidad, int danioBala, float tiempoDeVida = 5f)
+    private void ConfigurarBala(Vector2 dir, float vel, int dmg, float vida)
     {
-        this.danio = danioBala;
-        rb.linearVelocity = direccion.normalized * velocidad;
+        direccion = dir.normalized;
+        velocidad = vel;
+        danio = dmg;
+        tiempoVida = vida;
+        direccionAsignada = true;
+
+        if (!rb) TryGetComponent(out rb);
+        rb.linearVelocity = direccion * velocidad;
 
         float angulo = Mathf.Atan2(direccion.y, direccion.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0, 0, angulo);
-
-        Destroy(gameObject, tiempoDeVida);
+        transform.rotation = Quaternion.Euler(0f, 0f, angulo);
     }
 
-    private void OnTriggerEnter2D(Collider2D col)
+    void OnTriggerEnter2D(Collider2D col)
     {
-        if (col.CompareTag("Player"))
+        ProcesarImpacto(col);
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (EsTag(collision.gameObject, tagHueco))
         {
-            if (col.TryGetComponent(out Vida vidaJugador))
+            Physics2D.IgnoreCollision(miCollider, collision.collider, true);
+            rb.linearVelocity = (direccionAsignada ? direccion : (Vector2)transform.right) * velocidad;
+            return;
+        }
+
+        ProcesarImpacto(collision.collider);
+    }
+
+    private void ProcesarImpacto(Collider2D col)
+    {
+        if (col == null) return;
+
+        if (EsTag(col.gameObject, tagHueco))
+        {
+            if (!col.isTrigger && miCollider != null)
             {
-                if (vidaJugador.EsInvulnerable) return;
-                vidaJugador.RecibirDanio(danio);
+                Physics2D.IgnoreCollision(miCollider, col, true);
             }
-            Destroy(gameObject);
+            return;
         }
-        else if (!col.isTrigger && col.gameObject.layer != LayerMask.NameToLayer("Enemy"))
+
+        if (col.isTrigger && !EsTag(col.gameObject, tagObjetivo)) return;
+
+        if (EsTag(col.gameObject, tagObjetivo))
+        {
+            if (col.TryGetComponent(out Jugador jug) && jug.EsInvulnerablePorDash) return;
+            if (col.TryGetComponent(out Vida vidaObj))
+            {
+                if (vidaObj.EsInvulnerable) return;
+                vidaObj.RecibirDanio(danio);
+            }
+            if (fuerzaEmpuje > 0f && col.TryGetComponent(out Empuje empujeObj))
+            {
+                Vector2 dirEmpuje = direccionAsignada ? direccion : (Vector2)(col.transform.position - transform.position).normalized;
+                empujeObj.AplicarEmpuje(dirEmpuje, fuerzaEmpuje);
+            }
+
+            Destroy(gameObject);
+            return;
+        }
+
+        if (EsTag(col.gameObject, tagPared) || !col.isTrigger)
         {
             Destroy(gameObject);
         }
+    }
+
+    private bool EsTag(GameObject obj, string tagBuscado)
+    {
+        return obj != null && !string.IsNullOrEmpty(tagBuscado) && string.Equals(obj.tag, tagBuscado, System.StringComparison.OrdinalIgnoreCase);
     }
 }

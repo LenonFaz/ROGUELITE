@@ -9,21 +9,22 @@ public class Empuje : MonoBehaviour
     [Range(0.1f, 3f)] public float resistencia = 1f;
 
     private Rigidbody2D rb;
-    private float timer = 0f;
+    private float timer;
     private Vector2 velRef;
 
     public bool EstaEmpujado => timer > 0f;
+    public bool EstaSiendoEmpujado => timer > 0f;
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
+        TryGetComponent(out rb);
     }
 
     public void AplicarEmpuje(Vector2 direccion, float fuerza)
     {
         timer = duracion;
         velRef = Vector2.zero;
-        rb.linearVelocity = direccion.normalized * fuerza * resistencia;
+        rb.linearVelocity = direccion.normalized * (fuerza * resistencia);
     }
 
     void FixedUpdate()

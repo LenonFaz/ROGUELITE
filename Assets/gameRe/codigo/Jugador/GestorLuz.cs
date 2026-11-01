@@ -1,12 +1,12 @@
 using UnityEngine;
-using UnityEngine.UI; // Necesario para controlar la UI
+using UnityEngine.UI;
 
 public class GestorLuz : MonoBehaviour
 {
     public static GestorLuz Instancia { get; private set; }
 
     [Header("Configuración Principal")]
-    [SerializeField, Min(0f)] private float luzMaxima = 100f;
+    [SerializeField, Min(0.01f)] private float luzMaxima = 100f;
     [SerializeField, Min(0f)] private float aumentoPorSegundo = 1.5f;
 
     [Header("Modificadores de Plegaria")]
@@ -15,14 +15,13 @@ public class GestorLuz : MonoBehaviour
     [SerializeField, Min(0f)] private float reduccionPorMuerte = 8f;
 
     [Header("Interfaz Visual")]
-    [Tooltip("Arrastra aquí el objeto Image de tu Canvas que funciona como barra")]
     [SerializeField] private Image barraLuzUI;
 
     public float LuzActual { get; private set; }
-    public float PorcentajeLuz => LuzActual / luzMaxima;
-    public bool PlegariaActiva { get; private set; } = false;
+    public float PorcentajeLuz => luzMaxima > 0f ? LuzActual / luzMaxima : 0f;
+    public bool PlegariaActiva { get; private set; }
 
-    private bool juegoTerminado = false;
+    private bool juegoTerminado;
 
     void Awake()
     {
@@ -32,16 +31,14 @@ public class GestorLuz : MonoBehaviour
 
     void Start()
     {
-        ReiniciarLuz(); // Asegura que empiece vacía al darle Play
+        ReiniciarLuz();
     }
 
     void Update()
     {
         if (juegoTerminado || !PlegariaActiva) return;
 
-        LuzActual += aumentoPorSegundo * Time.deltaTime;
-        LuzActual = Mathf.Clamp(LuzActual, 0f, luzMaxima);
-
+        LuzActual = Mathf.Clamp(LuzActual + aumentoPorSegundo * Time.deltaTime, 0f, luzMaxima);
         ActualizarUI();
 
         if (LuzActual >= luzMaxima)
@@ -54,6 +51,7 @@ public class GestorLuz : MonoBehaviour
 
     public void ReiniciarLuz()
     {
+        juegoTerminado = false;
         LuzActual = 0f;
         ActualizarUI();
     }
@@ -67,6 +65,11 @@ public class GestorLuz : MonoBehaviour
         if (juegoTerminado) return;
         LuzActual = Mathf.Clamp(LuzActual + cantidad, 0f, luzMaxima);
         ActualizarUI();
+
+        if (LuzActual >= luzMaxima)
+        {
+            EjecutarVaporizacion();
+        }
     }
 
     private void ActualizarUI()
@@ -80,11 +83,11 @@ public class GestorLuz : MonoBehaviour
     private void EjecutarVaporizacion()
     {
         juegoTerminado = true;
-        GameObject jugador = GameObject.FindGameObjectWithTag("Player");
+        GameObject jugador = Jugador.Instancia != null ? Jugador.Instancia.gameObject : GameObject.FindGameObjectWithTag("Player");
 
         if (jugador != null && jugador.TryGetComponent(out Vida vidaJugador))
         {
-            vidaJugador.RecibirDanio(9999);
+            vidaJugador.ForzarMuerte();
         }
     }
 }

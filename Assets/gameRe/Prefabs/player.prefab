@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 8083520591951444010}
   - component: {fileID: 6477505835364722120}
   - component: {fileID: 7546679324461516425}
-  - component: {fileID: 7818566604573247963}
   - component: {fileID: 5755313477370026081}
   - component: {fileID: 4056341534410919713}
   - component: {fileID: 7964564165039044297}
@@ -194,20 +193,25 @@ MonoBehaviour:
   velDash: 14.9
   durDash: 0.12
   cdDash: 0.6
-  durInv: 0.2
-  duracionGeneracionResidual: 0.22
+  invulnerableEnDash: 1
+  usarImagenResidual: 1
   intervaloResidual: 0.04
   duracionResidual: 0.4
   colorResidual: {r: 1, g: 0, b: 0.18057775, a: 0.29411766}
   anim: {fileID: 0}
   sprite: {fileID: 0}
-  aUp: {fileID: 7400000, guid: 16c18ed5f5ea6dd4ba0719bf3b8764da, type: 2}
-  aDown: {fileID: 7400000, guid: 230b642d3e2f7734d80cee130aa82322, type: 2}
-  aRight: {fileID: 7400000, guid: 7228a45effe9c2c4fa3000e5602e4064, type: 2}
-  aIdleUp: {fileID: 7400000, guid: a0500cdf609f51d4ea0b6a68f8b0e90f, type: 2}
   aIdleDown: {fileID: 7400000, guid: 6408aa1d82db166468a8447ce35c1019, type: 2}
+  aIdleUp: {fileID: 7400000, guid: a0500cdf609f51d4ea0b6a68f8b0e90f, type: 2}
   aIdleRight: {fileID: 7400000, guid: 70482f5862e1f1d4286d72313ed6d410, type: 2}
-  aDash: {fileID: 0}
+  aMoveDown: {fileID: 0}
+  aMoveUp: {fileID: 0}
+  aMoveRight: {fileID: 0}
+  aDashDown: {fileID: 0}
+  aDashUp: {fileID: 0}
+  aDashRight: {fileID: 0}
+  vida: {fileID: 0}
+  empuje: {fileID: 0}
+  ataque: {fileID: 0}
 --- !u!114 &6477505835364722120
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -345,21 +349,6 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
---- !u!114 &7818566604573247963
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1374719718505522085}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9bfc3825145d0bd47b6d5d54dd074cc2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Empuje
-  duracion: 0.2
-  suavizado: 0.15
-  resistencia: 1
 --- !u!95 &5755313477370026081
 Animator:
   serializedVersion: 7

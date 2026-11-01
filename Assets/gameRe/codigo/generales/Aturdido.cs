@@ -3,7 +3,7 @@ using UnityEngine;
 public class Aturdido : MonoBehaviour
 {
     public float duracion = 1.2f;
-    private float timer = 0f;
+    private float timer;
 
     public bool EstaAturdido => timer > 0f;
 
