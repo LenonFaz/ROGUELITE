@@ -243,6 +243,7 @@ MonoBehaviour:
   aumentoPorDanio: 20
   reduccionPorGolpe: 1
   reduccionPorMuerte: 8
+  barraLuzUI: {fileID: 0}
 --- !u!4 &242507156
 Transform:
   m_ObjectHideFlags: 0
@@ -34996,7 +34997,7 @@ TilemapRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_MaskInteraction: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -153476,7 +153477,7 @@ Tilemap:
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
-  m_Color: {r: 0.17702028, g: 0.24528301, b: 0.21115164, a: 1}
+  m_Color: {r: 0.044499822, g: 0.0754717, b: 0.05998576, a: 1}
   m_Origin: {x: -34, y: -56, z: 0}
   m_Size: {x: 121, y: 97, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
