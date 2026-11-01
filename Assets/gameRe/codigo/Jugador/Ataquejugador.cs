@@ -3,25 +3,25 @@ using UnityEngine.InputSystem;
 
 public class AtaqueJugador : MonoBehaviour
 {
-    [Header("Ataque")]
-    [SerializeField, Min(0f)] private float rango = 1.2f;
+    [Header("Hitbox y Ataque")]
+    [SerializeField, Min(0f)] private float offsetHitbox = 1.2f;
     [SerializeField] private Vector2 tamHitbox = new Vector2(1.2f, 1f);
     [SerializeField, Min(0f)] private float cooldown = 0.3f;
     [SerializeField] private LayerMask capaEnemigos;
     [SerializeField, Min(0)] private int danio = 1;
     [SerializeField, Min(0f)] private float fuerzaEmpuje = 8f;
 
-    [Header("Animación y Efectos")]
+    [Header("Animación")]
     [SerializeField] private Animator animJugador;
     [SerializeField] private SpriteRenderer spriteJugador;
     [SerializeField, Min(0f)] private float duracionAnimAtaque = 0.2f;
     [SerializeField] private AnimationClip aAtkUp;
     [SerializeField] private AnimationClip aAtkDown;
     [SerializeField] private AnimationClip aAtkRight;
-    [SerializeField] private GameObject prefabEfectoGolpe;
 
     public bool EstaAtacando { get; private set; }
 
+    private Jugador jugador;
     private float timerCooldown;
     private float timerAtaque;
     private Vector2 ultimaDireccion = Vector2.down;
@@ -29,6 +29,7 @@ public class AtaqueJugador : MonoBehaviour
 
     void Awake()
     {
+        TryGetComponent(out jugador);
         if (!animJugador) animJugador = GetComponentInChildren<Animator>();
         if (!spriteJugador) spriteJugador = GetComponentInChildren<SpriteRenderer>();
     }
@@ -67,11 +68,14 @@ public class AtaqueJugador : MonoBehaviour
         timerAtaque = duracionAnimAtaque;
         ultimaDireccion = dir;
 
-        Vector2 centro = (Vector2)transform.position + dir * rango;
+        if (jugador != null)
+        {
+            jugador.EstablecerDireccion(dir);
+        }
 
         ReproducirAnimacionAtaque(dir);
-        GenerarEfectoVisual(centro, dir);
 
+        Vector2 centro = (Vector2)transform.position + dir * offsetHitbox;
         float angulo = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         Collider2D[] golpeados = Physics2D.OverlapBoxAll(centro, tamHitbox, angulo, capaEnemigos);
 
@@ -107,19 +111,13 @@ public class AtaqueJugador : MonoBehaviour
         }
     }
 
-    void GenerarEfectoVisual(Vector2 pos, Vector2 dir)
-    {
-        if (!prefabEfectoGolpe) return;
-
-        float anguloEfecto = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-        Instantiate(prefabEfectoGolpe, pos, Quaternion.Euler(0f, 0f, anguloEfecto));
-    }
-
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
-        Vector2 centro = Application.isPlaying ? (Vector2)transform.position + ultimaDireccion * rango : (Vector2)transform.position + Vector2.down * rango;
-        Gizmos.matrix = Matrix4x4.TRS(centro, Quaternion.identity, Vector3.one);
+        Vector2 dir = Application.isPlaying ? ultimaDireccion : Vector2.down;
+        Vector2 centro = (Vector2)transform.position + dir * offsetHitbox;
+        float angulo = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        Gizmos.matrix = Matrix4x4.TRS(centro, Quaternion.Euler(0f, 0f, angulo), Vector3.one);
         Gizmos.DrawWireCube(Vector3.zero, tamHitbox);
     }
 }

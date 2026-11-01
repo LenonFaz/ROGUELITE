@@ -222,9 +222,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a18ae41b3152cf34a8bad739fa8e21d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AtaqueJugador
-  rango: 0.84
-  tamHitbox: {x: 1.18, y: 1.83}
-  cooldown: 0.3
+  offsetHitbox: 0.28
+  tamHitbox: {x: 2.13, y: 1.5}
+  cooldown: 0.42
   capaEnemigos:
     serializedVersion: 2
     m_Bits: 8
@@ -236,7 +236,6 @@ MonoBehaviour:
   aAtkUp: {fileID: 7400000, guid: 99c6359490c687e4ba05e1d687716c47, type: 2}
   aAtkDown: {fileID: 7400000, guid: 6706db6b56f975d45bff6ce436b7b6d8, type: 2}
   aAtkRight: {fileID: 7400000, guid: e40c06444de325841a59c0a34427d32d, type: 2}
-  prefabEfectoGolpe: {fileID: 2251737647928114319, guid: 04a871862857e954e88d3b088c1d298e, type: 3}
 --- !u!120 &7546679324461516425
 LineRenderer:
   serializedVersion: 3

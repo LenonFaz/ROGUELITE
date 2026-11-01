@@ -84,10 +84,19 @@ public class Jugador : MonoBehaviour
         vel = velBase;
     }
 
+    public void EstablecerDireccion(Vector2 nuevaDir)
+    {
+        if (nuevaDir.sqrMagnitude > 0.01f)
+        {
+            ultimaDir = nuevaDir.normalized;
+            ActualizarVolteoForzado();
+        }
+    }
+
     void OnMove(InputValue value)
     {
         inputMov = value.Get<Vector2>();
-        if (inputMov.sqrMagnitude > 0.01f && !dasheando)
+        if (inputMov.sqrMagnitude > 0.01f && !dasheando && (ataque == null || !ataque.EstaAtacando))
         {
             ultimaDir = inputMov.normalized;
         }
@@ -122,6 +131,11 @@ public class Jugador : MonoBehaviour
 
     void Update()
     {
+        if (inputMov.sqrMagnitude > 0.01f && !dasheando && (ataque == null || !ataque.EstaAtacando))
+        {
+            ultimaDir = inputMov.normalized;
+        }
+
         ActualizarTimers(Time.deltaTime);
         ActualizarVolteoSprite();
         ActualizarAnimaciones();
@@ -197,11 +211,18 @@ public class Jugador : MonoBehaviour
         if (!sprite || dasheando) return;
         if (ataque != null && ataque.EstaAtacando) return;
 
-        if (Mathf.Abs(ultimaDir.x) > 0.1f)
+        ActualizarVolteoForzado();
+    }
+
+    private void ActualizarVolteoForzado()
+    {
+        if (!sprite) return;
+
+        if (Mathf.Abs(ultimaDir.x) >= Mathf.Abs(ultimaDir.y))
         {
             sprite.flipX = ultimaDir.x < 0f;
         }
-        else if (Mathf.Abs(ultimaDir.y) > 0.1f)
+        else
         {
             sprite.flipX = false;
         }
