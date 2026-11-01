@@ -7,20 +7,27 @@ public class Vida : MonoBehaviour
 {
     [Header("Configuración de Vida")]
     [SerializeField, Min(1)] private int vidaMaxima = 5;
-    [SerializeField] private bool esJugador = false;
+    [SerializeField] private bool esJugador;
+    [SerializeField, Min(0f)] private float tiempoInvulnerabilidadDanio = 0.6f;
 
     [Header("Eventos")]
     public UnityEvent AlRecibirDanio;
     public UnityEvent AlMorir;
 
     private int vidaActual;
+    private ImpactoJugador impactoVisual;
+    private Coroutine rutinaInvulnerable;
 
     public bool EsInvulnerable { get; private set; }
+    public int VidaActual => vidaActual;
+    public int VidaMaxima => vidaMaxima;
+    public float PorcentajeVida => vidaMaxima > 0 ? Mathf.Clamp01((float)vidaActual / vidaMaxima) : 0f;
 
     void Awake()
     {
         vidaActual = vidaMaxima;
         EsInvulnerable = false;
+        TryGetComponent(out impactoVisual);
 
         if (!esJugador)
         {
@@ -37,26 +44,39 @@ public class Vida : MonoBehaviour
     {
         if (vidaActual <= 0 || EsInvulnerable) return;
 
-        vidaActual -= cantidad;
-
+        vidaActual = Mathf.Max(0, vidaActual - cantidad);
         AlRecibirDanio?.Invoke();
 
         if (GestorLuz.Instancia != null)
         {
-            if (esJugador)
-            {
-                GestorLuz.Instancia.RegistrarDanioAlJugador();
-            }
-            else
-            {
-                GestorLuz.Instancia.RegistrarGolpeAEnemigo();
-            }
+            if (esJugador) GestorLuz.Instancia.RegistrarDanioAlJugador();
+            else GestorLuz.Instancia.RegistrarGolpeAEnemigo();
         }
 
         if (vidaActual <= 0)
         {
             Morir();
+            return;
         }
+
+        if (esJugador && tiempoInvulnerabilidadDanio > 0f)
+        {
+            ActivarInvulnerabilidad(tiempoInvulnerabilidadDanio);
+            if (impactoVisual != null) impactoVisual.EjecutarImpacto(tiempoInvulnerabilidadDanio);
+        }
+        else if (impactoVisual != null)
+        {
+            impactoVisual.EjecutarImpacto();
+        }
+    }
+
+    public void ForzarMuerte()
+    {
+        if (vidaActual <= 0) return;
+        EsInvulnerable = false;
+        vidaActual = 0;
+        AlRecibirDanio?.Invoke();
+        Morir();
     }
 
     public void Curar(int cantidad)
@@ -67,7 +87,9 @@ public class Vida : MonoBehaviour
 
     public void ActivarInvulnerabilidad(float duracion)
     {
-        StartCoroutine(RutinaInvulnerabilidad(duracion));
+        if (!gameObject.activeInHierarchy || duracion <= 0f) return;
+        if (rutinaInvulnerable != null) StopCoroutine(rutinaInvulnerable);
+        rutinaInvulnerable = StartCoroutine(RutinaInvulnerabilidad(duracion));
     }
 
     private IEnumerator RutinaInvulnerabilidad(float duracion)
@@ -75,6 +97,7 @@ public class Vida : MonoBehaviour
         EsInvulnerable = true;
         yield return new WaitForSeconds(duracion);
         EsInvulnerable = false;
+        rutinaInvulnerable = null;
     }
 
     private void Morir()
@@ -87,5 +110,11 @@ public class Vida : MonoBehaviour
         }
 
         Destroy(gameObject);
+    }
+
+    void OnDisable()
+    {
+        EsInvulnerable = false;
+        rutinaInvulnerable = null;
     }
 }

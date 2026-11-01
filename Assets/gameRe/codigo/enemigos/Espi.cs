@@ -3,7 +3,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(SpriteRenderer))]
-public class Espi : MonoBehaviour
+public class Espi : MonoBehaviour, IRangoDeteccion
 {
     [Header("Referencias")]
     public Transform player;
@@ -14,6 +14,7 @@ public class Espi : MonoBehaviour
     public float desacel = 18f;
 
     [Header("Ataque Espiral")]
+    public float tiempoAvisoAtaque = 0.35f;
     public int shootAmount = 10;
     public float shootInterval = 0.1f;
     public float velocidadBala = 6f;
@@ -36,11 +37,14 @@ public class Espi : MonoBehaviour
     public float tiempoInvisible = 0.2f;
     public float tiempoFadeIn = 0.3f;
 
+    public float RangoDeteccion => rangoDet;
+
     private Rigidbody2D rb;
     private SpriteRenderer sprite;
     private Collider2D miCol;
     private Empuje empuje;
     private Aturdido aturdido;
+    private IndicadorAtaque indicador;
     private float tTeleport;
     private bool ocupado;
 
@@ -51,6 +55,7 @@ public class Espi : MonoBehaviour
         TryGetComponent(out miCol);
         TryGetComponent(out empuje);
         TryGetComponent(out aturdido);
+        if (!TryGetComponent(out indicador)) indicador = gameObject.AddComponent<IndicadorAtaque>();
 
         rb.bodyType = RigidbodyType2D.Dynamic;
         rb.gravityScale = 0f;
@@ -64,8 +69,12 @@ public class Espi : MonoBehaviour
 
         if (player == null)
         {
-            GameObject p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) player = p.transform;
+            if (Jugador.Instancia != null) player = Jugador.Instancia.transform;
+            else
+            {
+                GameObject p = GameObject.FindGameObjectWithTag("Player");
+                if (p != null) player = p.transform;
+            }
         }
 
         if (player != null && miCol != null && player.TryGetComponent(out Collider2D colP))
@@ -105,7 +114,14 @@ public class Espi : MonoBehaviour
     {
         ocupado = true;
 
-        yield return StartCoroutine(DispararEspiral());
+        indicador.MostrarAviso(tiempoAvisoAtaque);
+        yield return new WaitForSeconds(tiempoAvisoAtaque);
+
+        if (!Bloqueado())
+        {
+            yield return StartCoroutine(DispararEspiral());
+        }
+
         yield return StartCoroutine(HacerFade(1f, 0f, tiempoFadeOut));
         yield return new WaitForSeconds(tiempoInvisible);
 
@@ -177,8 +193,9 @@ public class Espi : MonoBehaviour
 
             Collider2D[] colisiones = Physics2D.OverlapCircleAll(candidata, margenBorde);
             bool chocaObstaculo = false;
-            foreach (var col in colisiones)
+            for (int j = 0; j < colisiones.Length; j++)
             {
+                Collider2D col = colisiones[j];
                 if (!col.isTrigger && col.gameObject != gameObject && !col.CompareTag("Player") && col.gameObject.layer != capaEnemigo)
                 {
                     chocaObstaculo = true;
@@ -226,6 +243,7 @@ public class Espi : MonoBehaviour
     void OnDisable()
     {
         StopAllCoroutines();
+        if (indicador != null) indicador.CancelarAviso();
         RestablecerSprite();
         ocupado = false;
     }

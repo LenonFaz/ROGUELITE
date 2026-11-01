@@ -7,7 +7,7 @@ using UnityEngine.Tilemaps;
 [RequireComponent(typeof(CompositeCollider2D))]
 public class SombraTilemap : MonoBehaviour
 {
-    [SerializeField] private bool sombrearInteriorMuro = false;
+    [SerializeField] private bool sombrearInteriorMuro;
 
     private static readonly FieldInfo campoShapePath = typeof(ShadowCaster2D).GetField("m_ShapePath", BindingFlags.NonPublic | BindingFlags.Instance);
     private static readonly FieldInfo campoShapePathHash = typeof(ShadowCaster2D).GetField("m_ShapePathHash", BindingFlags.NonPublic | BindingFlags.Instance);

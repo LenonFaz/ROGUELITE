@@ -21,13 +21,9 @@ public class LuzAntorcha : MonoBehaviour
 
     void Update()
     {
-        // Si no hay gestor en la escena, no hace nada
         if (GestorLuz.Instancia == null) return;
 
-        // Lee el porcentaje de 0.0 a 1.0
         float nivelPlegaria = GestorLuz.Instancia.PorcentajeLuz;
-
-        // Lerp suaviza matemáticamente la transición entre el valor mínimo y el máximo
         luz.pointLightOuterRadius = Mathf.Lerp(radioMinimo, radioMaximo, nivelPlegaria);
         luz.intensity = Mathf.Lerp(intensidadMinima, intensidadMaxima, nivelPlegaria);
     }

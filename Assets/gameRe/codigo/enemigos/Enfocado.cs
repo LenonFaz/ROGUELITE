@@ -2,15 +2,13 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(LineRenderer))]
-public class Enfocado : MonoBehaviour
+public class Enfocado : MonoBehaviour, IRangoDeteccion
 {
     [Header("Referencias")]
     [SerializeField] private Transform player;
 
     [Header("Físicas")]
-    [Tooltip("Fuerza con la que frena si es empujado por un ataque")]
     [SerializeField, Min(0f)] private float desacel = 18f;
-    [Tooltip("Distancia a la que empezará a disparar el láser")]
     [SerializeField, Min(0f)] private float rangoDet = 15f;
 
     [Header("Láser Gaster Blaster")]
@@ -30,12 +28,15 @@ public class Enfocado : MonoBehaviour
     [SerializeField] private Color colorLaser = Color.red;
     [SerializeField, Min(0f)] private float grosorLaser = 0.8f;
 
+    public float RangoDeteccion => rangoDet;
+
     private Rigidbody2D rb;
     private Aturdido aturdido;
     private Empuje empuje;
     private LineRenderer lr;
+    private IndicadorAtaque indicador;
 
-    enum Estado { Esperando, Apuntando, Fijado, Disparando }
+    private enum Estado { Esperando, Apuntando, Fijado, Disparando }
     private Estado estadoActual = Estado.Esperando;
 
     private float timerCd;
@@ -52,21 +53,26 @@ public class Enfocado : MonoBehaviour
         TryGetComponent(out aturdido);
         TryGetComponent(out empuje);
         TryGetComponent(out lr);
+        if (!TryGetComponent(out indicador)) indicador = gameObject.AddComponent<IndicadorAtaque>();
 
         ConfigurarLinea();
+    }
 
+    void Start()
+    {
         if (!player)
         {
-            var p = GameObject.FindGameObjectWithTag("Player");
-            if (p) player = p.transform;
+            if (Jugador.Instancia != null) player = Jugador.Instancia.transform;
+            else
+            {
+                GameObject p = GameObject.FindGameObjectWithTag("Player");
+                if (p) player = p.transform;
+            }
         }
 
-        if (player)
+        if (player && TryGetComponent(out Collider2D col) && player.TryGetComponent(out Collider2D colP))
         {
-            if (TryGetComponent(out Collider2D col) && player.TryGetComponent(out Collider2D colP))
-            {
-                Physics2D.IgnoreCollision(col, colP, true);
-            }
+            Physics2D.IgnoreCollision(col, colP, true);
         }
     }
 
@@ -74,8 +80,11 @@ public class Enfocado : MonoBehaviour
     {
         lr.positionCount = 2;
         lr.useWorldSpace = true;
-        if (lr.material == null)
-            lr.material = new Material(Shader.Find("Sprites/Default"));
+        if (lr.sharedMaterial == null)
+        {
+            Shader s = Shader.Find("Sprites/Default") ?? Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+            if (s != null) lr.material = new Material(s);
+        }
         lr.enabled = false;
     }
 
@@ -83,11 +92,11 @@ public class Enfocado : MonoBehaviour
     {
         if (!player) return;
 
-        // Si es aturdido o empujado, se cancela el láser
         if (Bloqueado() && estadoActual != Estado.Esperando)
         {
             estadoActual = Estado.Esperando;
             lr.enabled = false;
+            indicador.CancelarAviso();
             timerCd = cdAtaque;
         }
 
@@ -107,7 +116,6 @@ public class Enfocado : MonoBehaviour
 
             case Estado.Apuntando:
                 timerEstado -= Time.deltaTime;
-
                 dirRayo = (player.position - transform.position).normalized;
                 DibujarLinea(colorMira, grosorMira);
 
@@ -115,12 +123,12 @@ public class Enfocado : MonoBehaviour
                 {
                     estadoActual = Estado.Fijado;
                     timerEstado = tiempoFijado;
+                    indicador.MostrarAviso(tiempoFijado);
                 }
                 break;
 
             case Estado.Fijado:
                 timerEstado -= Time.deltaTime;
-
                 DibujarLinea(colorMira, grosorMira);
 
                 if (timerEstado <= 0f)
@@ -133,7 +141,6 @@ public class Enfocado : MonoBehaviour
 
             case Estado.Disparando:
                 timerEstado -= Time.deltaTime;
-
                 DibujarLinea(colorLaser, grosorLaser);
 
                 if (timerEstado <= 0f)
@@ -158,7 +165,6 @@ public class Enfocado : MonoBehaviour
 
         if (empuje != null && empuje.EstaEmpujado) return;
 
-        // Al ser una "torreta", su único objetivo de movimiento es quedarse quieto
         rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, desacel * Time.fixedDeltaTime);
     }
 
@@ -173,24 +179,34 @@ public class Enfocado : MonoBehaviour
 
     void EjecutarDanioRayo()
     {
-        Vector2 centroHitbox = (Vector2)transform.position + dirRayo * (rangoLaser / 2f);
-        Vector2 tamañoHitbox = new Vector2(rangoLaser, grosorLaser);
+        Vector2 centroHitbox = (Vector2)transform.position + dirRayo * (rangoLaser * 0.5f);
+        Vector2 tamHitbox = new Vector2(rangoLaser, grosorLaser);
         float angulo = Mathf.Atan2(dirRayo.y, dirRayo.x) * Mathf.Rad2Deg;
 
-        Collider2D[] golpeados = Physics2D.OverlapBoxAll(centroHitbox, tamañoHitbox, angulo, capaJugador);
+        Collider2D[] golpeados = Physics2D.OverlapBoxAll(centroHitbox, tamHitbox, angulo, capaJugador);
 
-        foreach (var c in golpeados)
+        for (int i = 0; i < golpeados.Length; i++)
         {
+            Collider2D c = golpeados[i];
+            if (c.TryGetComponent(out Jugador jug) && jug.EsInvulnerablePorDash) continue;
+
             if (c.TryGetComponent(out Vida vida))
             {
                 if (vida.EsInvulnerable) continue;
                 vida.RecibirDanio(1);
             }
-            if (c.TryGetComponent(out Empuje e)) e.AplicarEmpuje(dirRayo, fuerzaEmpujeLaser); // en Enfocado: dirRayo, fuerzaEmpujeLaser
+            if (c.TryGetComponent(out Empuje e)) e.AplicarEmpuje(dirRayo, fuerzaEmpujeLaser);
         }
     }
 
     bool Bloqueado() => (aturdido != null && aturdido.EstaAturdido) || (empuje != null && empuje.EstaEmpujado);
+
+    void OnDisable()
+    {
+        if (lr != null) lr.enabled = false;
+        if (indicador != null) indicador.CancelarAviso();
+        estadoActual = Estado.Esperando;
+    }
 
     void OnDrawGizmosSelected()
     {

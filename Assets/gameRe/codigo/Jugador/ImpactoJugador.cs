@@ -4,50 +4,48 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class ImpactoJugador : MonoBehaviour
 {
-    SpriteRenderer spriteRenderer;
-    Color colorOriginal;
-    Coroutine corrutina;
+    private SpriteRenderer spriteRenderer;
+    private Color colorOriginal;
+    private Coroutine corrutina;
 
     void Awake()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        TryGetComponent(out spriteRenderer);
         colorOriginal = spriteRenderer.color;
-    }
-
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
-        {
-            EjecutarImpacto();
-        }
-    }
-
-    void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
-        {
-            EjecutarImpacto();
-        }
     }
 
     public void EjecutarImpacto()
     {
-        if (corrutina != null) StopCoroutine(corrutina);
-        corrutina = StartCoroutine(Secuencia());
+        EjecutarImpacto(0.15f);
     }
 
-    IEnumerator Secuencia()
+    public void EjecutarImpacto(float duracion)
     {
-        spriteRenderer.color = Color.black;
-        yield return new WaitForSeconds(0.05f);
+        if (!gameObject.activeInHierarchy) return;
+        if (corrutina != null) StopCoroutine(corrutina);
+        corrutina = StartCoroutine(Secuencia(duracion));
+    }
 
-        spriteRenderer.color = Color.white;
-        yield return new WaitForSeconds(0.05f);
+    private IEnumerator Secuencia(float duracion)
+    {
+        float tiempo = 0f;
+        bool alternar = false;
 
-        spriteRenderer.color = Color.black;
-        yield return new WaitForSeconds(0.05f);
+        while (tiempo < duracion)
+        {
+            spriteRenderer.color = alternar ? new Color(1f, 1f, 1f, 0.35f) : Color.black;
+            alternar = !alternar;
+            yield return new WaitForSeconds(0.06f);
+            tiempo += 0.06f;
+        }
 
         spriteRenderer.color = colorOriginal;
+        corrutina = null;
+    }
+
+    void OnDisable()
+    {
+        if (spriteRenderer != null) spriteRenderer.color = colorOriginal;
         corrutina = null;
     }
 }

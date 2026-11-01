@@ -171,12 +171,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8975889c188fb84988139d46220ad27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bullet
-  duracionTrail: 0.12
-  grosorInicial: 0.4
-  colorTrail: {r: 0, g: 0.6627451, b: 0.9960785, a: 0.8}
+  velocidad: 10
+  danio: 1
+  tiempoVida: 4
+  fuerzaEmpuje: 4
+  tagObjetivo: Player
+  tagPared: pared
+  tagHueco: hueco
+  activarTrail: 1
+  duracionTrail: 0.18
+  anchoTrail: 0.22
+  colorTrailInicio: {r: 0, g: 0.6627451, b: 0.9960785, a: 0.85}
+  colorTrailFin: {r: 0, g: 0.6176338, b: 1, a: 0}
+  activarLuz: 1
   colorLuz: {r: 0, g: 0.6627451, b: 0.9960785, a: 0.75}
-  intensidadLuz: 3
   radioLuz: 0.5
+  intensidadLuz: 4
 --- !u!96 &7502395400626538349
 TrailRenderer:
   serializedVersion: 4
@@ -323,8 +333,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 0, y: 0, z: 0}
+    m_Center: {x: 0, y: -0.00000011920929, z: 0}
+    m_Extent: {x: 0.9985302, y: 0.99853027, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0

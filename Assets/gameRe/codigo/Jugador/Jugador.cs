@@ -2,91 +2,92 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(SpriteRenderer))]
 public class Jugador : MonoBehaviour
 {
+    public static Jugador Instancia { get; private set; }
+
     [Header("Movimiento")]
     [SerializeField, Min(0f)] private float vel = 6f;
-    private float velOriginal;
-
-    public void CambiarVelocidad(float nuevaVelocidad)
-    {
-        vel = nuevaVelocidad;
-    }
     [SerializeField, Min(0f)] private float acel = 45f;
     [SerializeField, Min(0f)] private float desacel = 60f;
 
     [Header("Dash")]
-    [SerializeField, Min(0f)] private float velDash = 22f;
-    [SerializeField, Min(0f)] private float durDash = 0.15f;
+    [SerializeField, Min(0f)] private float velDash = 14.9f;
+    [SerializeField, Min(0f)] private float durDash = 0.12f;
     [SerializeField, Min(0f)] private float cdDash = 0.6f;
-    [SerializeField, Min(0f)] private float durInv = 0.2f;
-    private Vida vida;
+    [SerializeField] private bool invulnerableEnDash = true;
 
-    [Header("Efecto de Imagen Residual (Sin Prefab)")]
-    [Tooltip("Cuánto tiempo en total estará soltando sombras después de pulsar Dash")]
-    [SerializeField, Min(0f)] private float duracionGeneracionResidual = 0.2f;
-    [Tooltip("Cada cuánto tiempo suelta una sombra (más bajo = más juntas)")]
-    [SerializeField, Min(0.01f)] private float intervaloResidual = 0.015f;
-    [Tooltip("Cuánto tarda cada sombra individual en desaparecer")]
-    [SerializeField, Min(0.1f)] private float duracionResidual = 0.4f;
-    [SerializeField] private Color colorResidual = new Color(0f, 0.5f, 1f, 0.6f);
+    [Header("Efecto Dash (Imagen Residual)")]
+    [SerializeField] private bool usarImagenResidual = true;
+    [SerializeField, Min(0.01f)] private float intervaloResidual = 0.03f;
+    [SerializeField, Min(0.05f)] private float duracionResidual = 0.2f;
+    [SerializeField] private Color colorResidual = new Color(0.5f, 0.8f, 1f, 0.6f);
 
     [Header("Animaciones")]
     [SerializeField] private Animator anim;
     [SerializeField] private SpriteRenderer sprite;
-    [SerializeField] private AnimationClip aUp;
-    [SerializeField] private AnimationClip aDown;
-    [SerializeField] private AnimationClip aRight;
-    [SerializeField] private AnimationClip aIdleUp;
     [SerializeField] private AnimationClip aIdleDown;
+    [SerializeField] private AnimationClip aIdleUp;
     [SerializeField] private AnimationClip aIdleRight;
-    [SerializeField] private AnimationClip aDash;
+    [SerializeField] private AnimationClip aMoveDown;
+    [SerializeField] private AnimationClip aMoveUp;
+    [SerializeField] private AnimationClip aMoveRight;
+    [SerializeField] private AnimationClip aDashDown;
+    [SerializeField] private AnimationClip aDashUp;
+    [SerializeField] private AnimationClip aDashRight;
+
+    [Header("Referencias")]
+    [SerializeField] private Vida vida;
+    [SerializeField] private Empuje empuje;
+    [SerializeField] private AtaqueJugador ataque;
 
     private Rigidbody2D rb;
-    private Empuje empuje;
-    private AtaqueJugador ataque;
-
     private Vector2 inputMov;
     private Vector2 ultimaDir = Vector2.down;
 
+    private float velBase;
     private bool dasheando;
     private bool puedeDashear = true;
     private float tDash;
     private float tCdDash;
-
-    private float tGeneracionResidual;
-    private float tSiguienteResidual;
-
-    public bool EsInvencible { get; private set; }
-    private float tInv;
-
+    private float tResidual;
     private string animActual;
+
+    public bool EstaDasheando => dasheando;
+    public bool EsInvulnerablePorDash => dasheando && invulnerableEnDash;
+    public Vector2 UltimaDireccion => ultimaDir;
 
     void Awake()
     {
-        velOriginal = vel;
-        TryGetComponent(out vida);
+        Instancia = this;
         TryGetComponent(out rb);
         rb.gravityScale = 0f;
+        rb.freezeRotation = true;
+        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
 
-        TryGetComponent(out empuje);
-        TryGetComponent(out ataque);
+        if (!sprite) sprite = GetComponentInChildren<SpriteRenderer>();
+        if (!anim) anim = GetComponentInChildren<Animator>();
+        if (!vida) TryGetComponent(out vida);
+        if (!empuje) TryGetComponent(out empuje);
+        if (!ataque) TryGetComponent(out ataque);
 
-        if (!anim) TryGetComponent(out anim);
-        if (!sprite) TryGetComponent(out sprite);
+        velBase = vel;
+    }
+
+    public void CambiarVelocidad(float nuevaVel)
+    {
+        vel = nuevaVel;
     }
 
     public void RestaurarVelocidad()
     {
-        vel = velOriginal;
+        vel = velBase;
     }
 
     void OnMove(InputValue value)
     {
         inputMov = value.Get<Vector2>();
-
-        if (inputMov != Vector2.zero)
+        if (inputMov.sqrMagnitude > 0.01f && !dasheando)
         {
             ultimaDir = inputMov.normalized;
         }
@@ -96,32 +97,39 @@ public class Jugador : MonoBehaviour
     {
         if (value.isPressed && puedeDashear && !dasheando)
         {
-            dasheando = true;
-            puedeDashear = false;
-            tDash = durDash;
-            tCdDash = cdDash;
-            EsInvencible = true; if (vida != null) vida.ActivarInvulnerabilidad(durInv);
-            tInv = durInv;
+            IniciarDash();
+        }
+    }
 
-            tGeneracionResidual = duracionGeneracionResidual;
-            tSiguienteResidual = 0f;
+    private void IniciarDash()
+    {
+        dasheando = true;
+        puedeDashear = false;
+        tDash = durDash;
+        tCdDash = cdDash;
+        tResidual = 0f;
+
+        if (inputMov.sqrMagnitude > 0.01f)
+        {
+            ultimaDir = inputMov.normalized;
+        }
+
+        if (invulnerableEnDash && vida != null)
+        {
+            vida.ActivarInvulnerabilidad(durDash);
         }
     }
 
     void Update()
     {
         ActualizarTimers(Time.deltaTime);
-        ActualizarAnim();
-
-        if (tGeneracionResidual > 0f)
-        {
-            ManejarImagenesResiduales(Time.deltaTime);
-        }
+        ActualizarVolteoSprite();
+        ActualizarAnimaciones();
     }
 
     void FixedUpdate()
     {
-        if (empuje != null && empuje.EstaEmpujado) return;
+        if (empuje != null && empuje.EstaEmpujado && !dasheando) return;
 
         if (dasheando)
         {
@@ -130,104 +138,109 @@ public class Jugador : MonoBehaviour
         }
 
         Vector2 obj = inputMov * vel;
-        float tasa = inputMov != Vector2.zero ? acel : desacel;
+        float tasa = inputMov.sqrMagnitude > 0.01f ? acel : desacel;
         rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, obj, tasa * Time.fixedDeltaTime);
     }
 
-    void ActualizarTimers(float dt)
+    private void ActualizarTimers(float dt)
     {
         if (dasheando)
         {
             tDash -= dt;
-            if (tDash <= 0f) dasheando = false;
-        }
+            if (usarImagenResidual)
+            {
+                tResidual -= dt;
+                if (tResidual <= 0f)
+                {
+                    CrearImagenResidual();
+                    tResidual = intervaloResidual;
+                }
+            }
 
-        if (EsInvencible)
-        {
-            tInv -= dt;
-            if (tInv <= 0f) EsInvencible = false;
+            if (tDash <= 0f)
+            {
+                dasheando = false;
+            }
         }
 
         if (!puedeDashear)
         {
             tCdDash -= dt;
-            if (tCdDash <= 0f) puedeDashear = true;
-        }
-
-        if (tGeneracionResidual > 0f)
-        {
-            tGeneracionResidual -= dt;
+            if (tCdDash <= 0f)
+            {
+                puedeDashear = true;
+            }
         }
     }
 
-    void ManejarImagenesResiduales(float dt)
+    private void CrearImagenResidual()
     {
-        if (!sprite) return;
+        if (!sprite || !sprite.sprite) return;
 
-        tSiguienteResidual -= dt;
+        GameObject obj = new GameObject("Residual");
+        obj.transform.SetPositionAndRotation(sprite.transform.position, sprite.transform.rotation);
+        obj.transform.localScale = sprite.transform.lossyScale;
 
-        if (tSiguienteResidual <= 0f)
+        SpriteRenderer sr = obj.AddComponent<SpriteRenderer>();
+        sr.sprite = sprite.sprite;
+        sr.flipX = sprite.flipX;
+        sr.sortingLayerID = sprite.sortingLayerID;
+        sr.sortingOrder = sprite.sortingOrder - 1;
+        if (sprite.sharedMaterial != null) sr.sharedMaterial = sprite.sharedMaterial;
+
+        ImagenResidual ir = obj.AddComponent<ImagenResidual>();
+        ir.Configurar(duracionResidual, colorResidual);
+    }
+
+    private void ActualizarVolteoSprite()
+    {
+        if (!sprite || dasheando) return;
+        if (ataque != null && ataque.EstaAtacando) return;
+
+        if (Mathf.Abs(ultimaDir.x) > 0.1f)
         {
-            tSiguienteResidual = intervaloResidual;
-
-            GameObject go = new GameObject("SombraDash");
-            go.transform.position = transform.position;
-            go.transform.rotation = transform.rotation;
-            go.transform.localScale = transform.localScale;
-
-            SpriteRenderer srObj = go.AddComponent<SpriteRenderer>();
-            srObj.sprite = sprite.sprite;
-            srObj.flipX = sprite.flipX;
-            srObj.material = sprite.material;
-            srObj.sortingLayerID = sprite.sortingLayerID;
-            srObj.sortingOrder = sprite.sortingOrder - 1;
-
-            ImagenResidual residual = go.AddComponent<ImagenResidual>();
-            residual.Configurar(duracionResidual, colorResidual);
+            sprite.flipX = ultimaDir.x < 0f;
+        }
+        else if (Mathf.Abs(ultimaDir.y) > 0.1f)
+        {
+            sprite.flipX = false;
         }
     }
 
-    void ActualizarAnim()
+    private void ActualizarAnimaciones()
     {
-        if (!anim || !sprite) return;
-
+        if (!anim) return;
         if (ataque != null && ataque.EstaAtacando)
         {
-            animActual = "";
+            animActual = string.Empty;
             return;
         }
 
-        AnimationClip clipObj = null;
+        bool moviendo = inputMov.sqrMagnitude > 0.01f;
+        bool esHorizontal = Mathf.Abs(ultimaDir.x) >= Mathf.Abs(ultimaDir.y);
+
+        AnimationClip clip = null;
 
         if (dasheando)
         {
-            clipObj = aDash;
+            if (esHorizontal) clip = aDashRight != null ? aDashRight : aMoveRight;
+            else clip = ultimaDir.y > 0f ? (aDashUp != null ? aDashUp : aMoveUp) : (aDashDown != null ? aDashDown : aMoveDown);
+        }
+        else if (moviendo)
+        {
+            if (esHorizontal) clip = aMoveRight;
+            else clip = ultimaDir.y > 0f ? aMoveUp : aMoveDown;
         }
         else
         {
-            if (Mathf.Abs(ultimaDir.x) > Mathf.Abs(ultimaDir.y))
-            {
-                clipObj = inputMov != Vector2.zero ? aRight : aIdleRight;
-                sprite.flipX = ultimaDir.x < 0;
-            }
-            else
-            {
-                if (ultimaDir.y > 0)
-                {
-                    clipObj = inputMov != Vector2.zero ? aUp : aIdleUp;
-                }
-                else
-                {
-                    clipObj = inputMov != Vector2.zero ? aDown : aIdleDown;
-                }
-                sprite.flipX = false;
-            }
+            if (esHorizontal) clip = aIdleRight;
+            else clip = ultimaDir.y > 0f ? aIdleUp : aIdleDown;
         }
 
-        if (clipObj && animActual != clipObj.name)
+        if (clip != null && animActual != clip.name)
         {
-            anim.Play(clipObj.name);
-            animActual = clipObj.name;
+            anim.Play(clip.name);
+            animActual = clip.name;
         }
     }
 }

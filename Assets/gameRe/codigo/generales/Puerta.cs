@@ -13,8 +13,8 @@ public class Puerta : MonoBehaviour
 
     void Awake()
     {
-        col = GetComponent<Collider2D>();
-        sr = GetComponent<SpriteRenderer>();
+        TryGetComponent(out col);
+        TryGetComponent(out sr);
 
         if (iniciarAbierta) Abrir();
         else Cerrar();

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 289056785964898139}
   - component: {fileID: 5768450946038934749}
+  - component: {fileID: 6192060924740110668}
   - component: {fileID: 3857264476897441854}
   - component: {fileID: 6609140607569338803}
   - component: {fileID: 2578080028385826798}
@@ -97,6 +98,24 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &6192060924740110668
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6233034672802623694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f17675282d5d37141910ab71b6268d46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MargenTerreno
+  radioMargen: 1.3
+  fuerzaRepulsion: 5
+  cantidadRayos: 12
+  tagsTerreno:
+  - pared
+  - hueco
 --- !u!50 &3857264476897441854
 Rigidbody2D:
   serializedVersion: 5
@@ -138,6 +157,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Vida
   vidaMaxima: 2
   esJugador: 0
+  tiempoInvulnerabilidadDanio: 0.6
   AlRecibirDanio:
     m_PersistentCalls:
       m_Calls: []
@@ -211,6 +231,7 @@ MonoBehaviour:
   prefabBullet: {fileID: 6588300776097158777, guid: 936d15bf493311a45b4cb7eb8530d630, type: 3}
   puntoDisparo: {fileID: 474077342245135098}
   desacel: 18
+  tiempoAvisoAtaque: 0.35
   shootAmount: 12
   shootInterval: 0.05
   velocidadBala: 5

@@ -1,6 +1,10 @@
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
+
+public interface IRangoDeteccion
+{
+    float RangoDeteccion { get; }
+}
 
 [RequireComponent(typeof(Collider2D))]
 public class Sala : MonoBehaviour
@@ -11,16 +15,16 @@ public class Sala : MonoBehaviour
     [SerializeField] private bool reiniciarLuzAlEntrar = true;
 
     private Transform jugador;
-    private bool jugadorEnSala = false;
-    private bool combateIniciado = false;
-    private bool salaLimpia = false;
+    private bool jugadorEnSala;
+    private bool combateIniciado;
+    private bool salaLimpia;
 
     void Awake()
     {
         Collider2D[] colliders = GetComponents<Collider2D>();
-        foreach (var c in colliders)
+        for (int i = 0; i < colliders.Length; i++)
         {
-            c.isTrigger = true;
+            colliders[i].isTrigger = true;
         }
 
         if (enemigos.Count == 0)
@@ -28,8 +32,9 @@ public class Sala : MonoBehaviour
             GetComponentsInChildren(true, enemigos);
         }
 
-        foreach (var e in enemigos)
+        for (int i = 0; i < enemigos.Count; i++)
         {
+            Vida e = enemigos[i];
             if (e != null)
             {
                 e.AlMorir.AddListener(VerificarEnemigosRestantes);
@@ -40,17 +45,26 @@ public class Sala : MonoBehaviour
 
     void Start()
     {
-        GameObject p = GameObject.FindGameObjectWithTag("Player");
-        if (p != null) jugador = p.transform;
+        if (Jugador.Instancia != null)
+        {
+            jugador = Jugador.Instancia.transform;
+        }
+        else
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) jugador = p.transform;
+        }
     }
 
     void Update()
     {
         if (!jugadorEnSala || salaLimpia || combateIniciado || jugador == null) return;
 
-        foreach (var e in enemigos)
+        for (int i = 0; i < enemigos.Count; i++)
         {
+            Vida e = enemigos[i];
             if (e == null) continue;
+
             float rango = ObtenerRangoDeteccion(e.gameObject);
             if (Vector2.Distance(e.transform.position, jugador.position) <= rango)
             {
@@ -80,14 +94,14 @@ public class Sala : MonoBehaviour
             return;
         }
 
-        foreach (var p in puertas)
+        for (int i = 0; i < puertas.Count; i++)
         {
-            if (p != null) p.Cerrar();
+            if (puertas[i] != null) puertas[i].Cerrar();
         }
 
-        foreach (var e in enemigos)
+        for (int i = 0; i < enemigos.Count; i++)
         {
-            if (e != null) ConfigurarIAEnemigo(e.gameObject, true);
+            if (enemigos[i] != null) ConfigurarIAEnemigo(enemigos[i].gameObject, true);
         }
     }
 
@@ -125,9 +139,9 @@ public class Sala : MonoBehaviour
             GestorLuz.Instancia.EstablecerPlegariaActiva(false);
         }
 
-        foreach (var p in puertas)
+        for (int i = 0; i < puertas.Count; i++)
         {
-            if (p != null) p.Abrir();
+            if (puertas[i] != null) puertas[i].Abrir();
         }
     }
 
@@ -139,9 +153,10 @@ public class Sala : MonoBehaviour
     private void ConfigurarIAEnemigo(GameObject enemigoObj, bool activo)
     {
         MonoBehaviour[] scripts = enemigoObj.GetComponents<MonoBehaviour>();
-        foreach (var s in scripts)
+        for (int i = 0; i < scripts.Length; i++)
         {
-            if (s is Vida || s is Empuje || s is Aturdido) continue;
+            MonoBehaviour s = scripts[i];
+            if (s is Vida || s is Empuje || s is Aturdido || s is IndicadorAtaque) continue;
             s.enabled = activo;
         }
 
@@ -153,17 +168,9 @@ public class Sala : MonoBehaviour
 
     private float ObtenerRangoDeteccion(GameObject enemigoObj)
     {
-        MonoBehaviour[] scripts = enemigoObj.GetComponents<MonoBehaviour>();
-        foreach (var s in scripts)
+        if (enemigoObj.TryGetComponent(out IRangoDeteccion detector))
         {
-            if (s is Vida || s is Empuje || s is Aturdido) continue;
-            var tipo = s.GetType();
-            var campo = tipo.GetField("rangoDeteccion", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                     ?? tipo.GetField("rangoDet", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            if (campo != null && campo.FieldType == typeof(float))
-            {
-                return (float)campo.GetValue(s);
-            }
+            return detector.RangoDeteccion;
         }
         return 8f;
     }
