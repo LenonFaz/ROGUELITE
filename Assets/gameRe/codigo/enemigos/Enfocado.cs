@@ -25,8 +25,12 @@ public class Enfocado : MonoBehaviour, IRangoDeteccion
     [Header("Visuales")]
     [SerializeField] private Color colorMira = new Color(1f, 0f, 0f, 0.4f);
     [SerializeField, Min(0f)] private float grosorMira = 0.05f;
-    [SerializeField] private Color colorLaser = Color.red;
     [SerializeField, Min(0f)] private float grosorLaser = 0.8f;
+
+    [Space]
+    [Tooltip("Sprite (bullet.png) que se estira a lo largo del rayo.")]
+    [SerializeField] private Sprite spriteLaser;
+    [SerializeField] private int ordenSpriteLaser = 10;
 
     public float RangoDeteccion => rangoDet;
 
@@ -35,6 +39,7 @@ public class Enfocado : MonoBehaviour, IRangoDeteccion
     private Empuje empuje;
     private LineRenderer lr;
     private IndicadorAtaque indicador;
+    private SpriteRenderer srLaser;
 
     private enum Estado { Esperando, Apuntando, Fijado, Disparando }
     private Estado estadoActual = Estado.Esperando;
@@ -56,6 +61,7 @@ public class Enfocado : MonoBehaviour, IRangoDeteccion
         if (!TryGetComponent(out indicador)) indicador = gameObject.AddComponent<IndicadorAtaque>();
 
         ConfigurarLinea();
+        CrearVisualLaser();
     }
 
     void Start()
@@ -88,6 +94,19 @@ public class Enfocado : MonoBehaviour, IRangoDeteccion
         lr.enabled = false;
     }
 
+    // El sprite NO es hijo del enemigo para que su escala/rotación no se mezclen con las del padre
+    void CrearVisualLaser()
+    {
+        if (!spriteLaser) return;
+
+        GameObject go = new GameObject("VisualLaser");
+        srLaser = go.AddComponent<SpriteRenderer>();
+        srLaser.sprite = spriteLaser;
+        srLaser.drawMode = SpriteDrawMode.Sliced; // las esquinas no se deforman, solo el centro se estira
+        srLaser.sortingOrder = ordenSpriteLaser;
+        srLaser.enabled = false;
+    }
+
     void Update()
     {
         if (!player) return;
@@ -95,7 +114,7 @@ public class Enfocado : MonoBehaviour, IRangoDeteccion
         if (Bloqueado() && estadoActual != Estado.Esperando)
         {
             estadoActual = Estado.Esperando;
-            lr.enabled = false;
+            ApagarVisuales();
             indicador.CancelarAviso();
             timerCd = cdAtaque;
         }
@@ -135,19 +154,27 @@ public class Enfocado : MonoBehaviour, IRangoDeteccion
                 {
                     estadoActual = Estado.Disparando;
                     timerEstado = tiempoDisparo;
+
+                    if (srLaser != null)
+                    {
+                        lr.enabled = false;       // apaga la mira
+                        srLaser.enabled = true;   // muestra el sprite estirado
+                    }
+
                     EjecutarDanioRayo();
                 }
                 break;
 
             case Estado.Disparando:
                 timerEstado -= Time.deltaTime;
-                DibujarLinea(colorLaser, grosorLaser);
+
+                if (srLaser != null) DibujarSpriteLaser();
 
                 if (timerEstado <= 0f)
                 {
                     estadoActual = Estado.Esperando;
                     timerCd = cdAtaque;
-                    lr.enabled = false;
+                    ApagarVisuales();
                 }
                 break;
         }
@@ -177,6 +204,16 @@ public class Enfocado : MonoBehaviour, IRangoDeteccion
         lr.SetPosition(1, (Vector2)transform.position + dirRayo * rangoLaser);
     }
 
+    // Mismo centro, ángulo y tamaño que el OverlapBoxAll: lo que se ve coincide con lo que daña
+    void DibujarSpriteLaser()
+    {
+        Vector2 centro = (Vector2)transform.position + dirRayo * (rangoLaser * 0.5f);
+        float angulo = Mathf.Atan2(dirRayo.y, dirRayo.x) * Mathf.Rad2Deg;
+
+        srLaser.transform.SetPositionAndRotation(centro, Quaternion.Euler(0f, 0f, angulo));
+        srLaser.size = new Vector2(rangoLaser, grosorLaser); // en modo Sliced, size reemplaza a la escala
+    }
+
     void EjecutarDanioRayo()
     {
         Vector2 centroHitbox = (Vector2)transform.position + dirRayo * (rangoLaser * 0.5f);
@@ -201,11 +238,22 @@ public class Enfocado : MonoBehaviour, IRangoDeteccion
 
     bool Bloqueado() => (aturdido != null && aturdido.EstaAturdido) || (empuje != null && empuje.EstaEmpujado);
 
-    void OnDisable()
+    void ApagarVisuales()
     {
         if (lr != null) lr.enabled = false;
+        if (srLaser != null) srLaser.enabled = false;
+    }
+
+    void OnDisable()
+    {
+        ApagarVisuales();
         if (indicador != null) indicador.CancelarAviso();
         estadoActual = Estado.Esperando;
+    }
+
+    void OnDestroy()
+    {
+        if (srLaser != null) Destroy(srLaser.gameObject);
     }
 
     void OnDrawGizmosSelected()
