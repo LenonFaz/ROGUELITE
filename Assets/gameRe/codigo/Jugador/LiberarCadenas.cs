@@ -26,8 +26,8 @@ public class LiberarCadenas : MonoBehaviour
     public float pausaEntreRondas = 0.4f;
     public Color colorPresionada = new Color(0.4f, 1f, 0.4f, 1f);
 
-    Key[] teclasWASD = { Key.W, Key.A, Key.S, Key.D };
-    Key[] teclasFlechas = { Key.UpArrow, Key.DownArrow, Key.LeftArrow, Key.RightArrow };
+    Key[] teclasWASD = { Key.W, Key.S, Key.D, Key.A };
+    Key[] teclasFlechas = { Key.UpArrow,Key.RightArrow , Key.LeftArrow, Key.DownArrow };
 
     bool[] presionadasWASD, presionadasFlechas;
     Color[] coloresOriginalesWASD, coloresOriginalesFlechas;
