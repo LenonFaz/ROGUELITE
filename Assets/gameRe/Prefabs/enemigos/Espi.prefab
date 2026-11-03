@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 2578080028385826798}
   - component: {fileID: 9098814924755998645}
   - component: {fileID: 8193739701696520999}
+  - component: {fileID: 3382309005417959267}
   m_Layer: 3
   m_Name: Espi
   m_TagString: Untagged
@@ -88,7 +89,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 2127309831889911118, guid: 40ceaa646ee2bc24bb96e8c87a4587a4, type: 3}
+  m_Sprite: {fileID: 6033112767088677138, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -244,9 +245,42 @@ MonoBehaviour:
   limitesMapa: {fileID: 0}
   margenBorde: 0.5
   intentosMaximos: 30
-  tiempoFadeOut: 0.3
+  framesDesaparecer:
+  - {fileID: 6033112767088677138, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
+  - {fileID: -6360908336280316510, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
+  - {fileID: 8022837906498448671, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
+  - {fileID: -1190285505119767594, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
+  - {fileID: 4253964680320802253, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
+  - {fileID: -3704024946305501315, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
+  - {fileID: 1698532128155732226, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
+  - {fileID: -3619123036805844023, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
+  - {fileID: -4624766509297278345, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
+  fpsDesaparecer: 12
+  tiempoFadeOut: 0.2
   tiempoInvisible: 0.2
   tiempoFadeIn: 0.3
+--- !u!95 &3382309005417959267
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6233034672802623694}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: d897cf444a794b247894b4cd07f79e86, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &8713813989180913712
 GameObject:
   m_ObjectHideFlags: 0

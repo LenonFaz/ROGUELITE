@@ -32,6 +32,11 @@ public class Espi : MonoBehaviour, IRangoDeteccion
     public float margenBorde = 0.5f;
     public int intentosMaximos = 30;
 
+    [Header("Animación de desaparición")]
+    [Tooltip("Sprites que se reproducen en orden antes del fade out.")]
+    public Sprite[] framesDesaparecer;
+    public float fpsDesaparecer = 12f;
+
     [Header("Fade")]
     public float tiempoFadeOut = 0.3f;
     public float tiempoInvisible = 0.2f;
@@ -47,6 +52,7 @@ public class Espi : MonoBehaviour, IRangoDeteccion
     private IndicadorAtaque indicador;
     private float tTeleport;
     private bool ocupado;
+    private Sprite spriteBase;
 
     void Awake()
     {
@@ -56,6 +62,8 @@ public class Espi : MonoBehaviour, IRangoDeteccion
         TryGetComponent(out empuje);
         TryGetComponent(out aturdido);
         if (!TryGetComponent(out indicador)) indicador = gameObject.AddComponent<IndicadorAtaque>();
+
+        spriteBase = sprite.sprite;
 
         rb.bodyType = RigidbodyType2D.Dynamic;
         rb.gravityScale = 0f;
@@ -122,6 +130,9 @@ public class Espi : MonoBehaviour, IRangoDeteccion
             yield return StartCoroutine(DispararEspiral());
         }
 
+        // Animación de desaparición (antes del fade out)
+        yield return StartCoroutine(ReproducirAnimacionDesaparecer());
+
         yield return StartCoroutine(HacerFade(1f, 0f, tiempoFadeOut));
         yield return new WaitForSeconds(tiempoInvisible);
 
@@ -131,11 +142,26 @@ public class Espi : MonoBehaviour, IRangoDeteccion
         rb.linearVelocity = Vector2.zero;
         Physics2D.SyncTransforms();
 
+        // Volver al sprite normal antes de reaparecer
+        if (spriteBase != null) sprite.sprite = spriteBase;
+
         yield return StartCoroutine(HacerFade(0f, 1f, tiempoFadeIn));
 
         RestablecerSprite();
         tTeleport = cdTeleport;
         ocupado = false;
+    }
+
+    IEnumerator ReproducirAnimacionDesaparecer()
+    {
+        if (framesDesaparecer == null || framesDesaparecer.Length == 0) yield break;
+
+        float espera = 1f / Mathf.Max(0.1f, fpsDesaparecer);
+        for (int i = 0; i < framesDesaparecer.Length; i++)
+        {
+            if (framesDesaparecer[i] != null) sprite.sprite = framesDesaparecer[i];
+            yield return new WaitForSeconds(espera);
+        }
     }
 
     IEnumerator DispararEspiral()
@@ -232,6 +258,7 @@ public class Espi : MonoBehaviour, IRangoDeteccion
         Color c = sprite.color;
         c.a = 1f;
         sprite.color = c;
+        if (spriteBase != null) sprite.sprite = spriteBase;
     }
 
     void OnEnable()

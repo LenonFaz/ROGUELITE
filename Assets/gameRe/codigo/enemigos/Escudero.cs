@@ -24,6 +24,12 @@ public class Escudero : MonoBehaviour, IRangoDeteccion
     [SerializeField, Min(0f)] private float fuerzaEmpuje = 8f;
     [SerializeField] private LayerMask capaJugador;
 
+    [Header("Colision en carga")]
+    [Tooltip("Capas que frenan la carga (paredes, huecos). NO incluir al jugador.")]
+    [SerializeField] private LayerMask capaObstaculos;
+    [Tooltip("Separacion que se deja contra la pared al frenar.")]
+    [SerializeField, Min(0f)] private float margenPared = 0.02f;
+
     public float RangoDeteccion => rangoDet;
 
     private enum Estado { Acercando, Aviso, Cargando, Recuperando }
@@ -37,12 +43,21 @@ public class Escudero : MonoBehaviour, IRangoDeteccion
     private Vector2 dirCarga;
     private bool golpeo;
 
+    private ContactFilter2D filtroObstaculos;
+    private readonly RaycastHit2D[] resultadosCast = new RaycastHit2D[8];
+
     void Awake()
     {
         TryGetComponent(out rb);
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+        filtroObstaculos = new ContactFilter2D();
+        filtroObstaculos.SetLayerMask(capaObstaculos);
+        filtroObstaculos.useLayerMask = true;
+        filtroObstaculos.useTriggers = false;
 
         TryGetComponent(out aturdido);
         TryGetComponent(out empuje);
@@ -148,10 +163,38 @@ public class Escudero : MonoBehaviour, IRangoDeteccion
                     Mathf.Atan2(haciaP.y, haciaP.x) * Mathf.Rad2Deg,
                     giroGradosSeg * Time.fixedDeltaTime) * Mathf.Deg2Rad;
                 dirCarga = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+
+                if (HayObstaculoAdelante(out float distLibre))
+                {
+                    rb.position += dirCarga * distLibre;
+                    rb.linearVelocity = Vector2.zero;
+                    IniciarRecuperacion();
+                    break;
+                }
+
                 rb.linearVelocity = dirCarga * velCarga;
                 GolpearJugador();
                 break;
         }
+    }
+
+    bool HayObstaculoAdelante(out float distLibre)
+    {
+        distLibre = 0f;
+        if (capaObstaculos.value == 0) return false;
+
+        float paso = velCarga * Time.fixedDeltaTime;
+        int n = rb.Cast(dirCarga, filtroObstaculos, resultadosCast, paso + margenPared);
+        if (n == 0) return false;
+
+        float minDist = float.MaxValue;
+        for (int i = 0; i < n; i++)
+        {
+            if (resultadosCast[i].distance < minDist) minDist = resultadosCast[i].distance;
+        }
+
+        distLibre = Mathf.Max(0f, minDist - margenPared);
+        return true;
     }
 
     void GolpearJugador()
