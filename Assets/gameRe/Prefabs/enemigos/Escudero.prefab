@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 2467672133465619038}
   - component: {fileID: 5093712887814640548}
   - component: {fileID: 1664966723808290078}
+  - component: {fileID: 6866570642225351096}
   - component: {fileID: 6934018678743831973}
   m_Layer: 3
   m_Name: Escudero
@@ -167,6 +168,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Vida
   vidaMaxima: 4
   esJugador: 0
+  tiempoInvulnerabilidadDanio: 0.6
   AlRecibirDanio:
     m_PersistentCalls:
       m_Calls: []
@@ -224,6 +226,31 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: -0.22}
   m_Radius: 0.25
+--- !u!114 &6866570642225351096
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7164333299462811464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0a6ff5d404bc334f9f75d8021183970, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimacionEscudero
+  frente:
+  - {fileID: -4160365095412961110, guid: 89cfa92598914ef499f6d1933b3cd995, type: 3}
+  - {fileID: 8048769924197331075, guid: 89cfa92598914ef499f6d1933b3cd995, type: 3}
+  - {fileID: -3610492242726746254, guid: 89cfa92598914ef499f6d1933b3cd995, type: 3}
+  - {fileID: -599061272271956951, guid: 89cfa92598914ef499f6d1933b3cd995, type: 3}
+  atras:
+  - {fileID: -819883957236302125, guid: 89cfa92598914ef499f6d1933b3cd995, type: 3}
+  - {fileID: 1881995242063433498, guid: 89cfa92598914ef499f6d1933b3cd995, type: 3}
+  - {fileID: -6724193241929570563, guid: 89cfa92598914ef499f6d1933b3cd995, type: 3}
+  - {fileID: -3192185736846598297, guid: 89cfa92598914ef499f6d1933b3cd995, type: 3}
+  fps: 8
+  velMinima: 0.05
+  zonaMuertaY: 0.1
 --- !u!114 &6934018678743831973
 MonoBehaviour:
   m_ObjectHideFlags: 0
