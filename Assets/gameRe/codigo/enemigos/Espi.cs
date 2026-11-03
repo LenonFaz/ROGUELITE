@@ -37,6 +37,12 @@ public class Espi : MonoBehaviour, IRangoDeteccion
     public float tiempoInvisible = 0.2f;
     public float tiempoFadeIn = 0.3f;
 
+    [Header("Animaciones")]
+    [SerializeField] private Animator anim;
+    [SerializeField] private AnimationClip aQuieto;
+    [SerializeField] private AnimationClip aLanzarProyectiles;
+    [SerializeField] private AnimationClip aTeleport;
+
     public float RangoDeteccion => rangoDet;
 
     private Rigidbody2D rb;
@@ -47,6 +53,7 @@ public class Espi : MonoBehaviour, IRangoDeteccion
     private IndicadorAtaque indicador;
     private float tTeleport;
     private bool ocupado;
+    private string animActual;
 
     void Awake()
     {
@@ -56,6 +63,7 @@ public class Espi : MonoBehaviour, IRangoDeteccion
         TryGetComponent(out empuje);
         TryGetComponent(out aturdido);
         if (!TryGetComponent(out indicador)) indicador = gameObject.AddComponent<IndicadorAtaque>();
+        if (!anim) TryGetComponent(out anim);
 
         rb.bodyType = RigidbodyType2D.Dynamic;
         rb.gravityScale = 0f;
@@ -83,11 +91,19 @@ public class Espi : MonoBehaviour, IRangoDeteccion
         }
 
         tTeleport = cdTeleport;
+        ReproducirAnim(aQuieto);
     }
 
     void Update()
     {
-        if (player == null || ocupado || Bloqueado()) return;
+        if (player == null) return;
+
+        if (!ocupado)
+        {
+            ReproducirAnim(aQuieto);
+        }
+
+        if (ocupado || Bloqueado()) return;
 
         sprite.flipX = player.position.x < transform.position.x;
 
@@ -113,6 +129,7 @@ public class Espi : MonoBehaviour, IRangoDeteccion
     IEnumerator AtaqueYTeleport()
     {
         ocupado = true;
+        ReproducirAnim(aLanzarProyectiles);
 
         indicador.MostrarAviso(tiempoAvisoAtaque);
         yield return new WaitForSeconds(tiempoAvisoAtaque);
@@ -122,6 +139,7 @@ public class Espi : MonoBehaviour, IRangoDeteccion
             yield return StartCoroutine(DispararEspiral());
         }
 
+        ReproducirAnim(aTeleport);
         yield return StartCoroutine(HacerFade(1f, 0f, tiempoFadeOut));
         yield return new WaitForSeconds(tiempoInvisible);
 
@@ -134,6 +152,7 @@ public class Espi : MonoBehaviour, IRangoDeteccion
         yield return StartCoroutine(HacerFade(0f, 1f, tiempoFadeIn));
 
         RestablecerSprite();
+        ReproducirAnim(aQuieto);
         tTeleport = cdTeleport;
         ocupado = false;
     }
@@ -226,6 +245,14 @@ public class Espi : MonoBehaviour, IRangoDeteccion
         sprite.color = c;
     }
 
+    private void ReproducirAnim(AnimationClip clip)
+    {
+        if (!anim || !clip) return;
+        if (animActual == clip.name) return;
+        anim.Play(clip.name);
+        animActual = clip.name;
+    }
+
     void RestablecerSprite()
     {
         if (sprite == null) return;
@@ -238,6 +265,7 @@ public class Espi : MonoBehaviour, IRangoDeteccion
     {
         RestablecerSprite();
         ocupado = false;
+        animActual = string.Empty;
     }
 
     void OnDisable()

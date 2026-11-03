@@ -87,14 +87,19 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
     [SerializeField] private Color colorDisparoLaser = new Color(1f, 0.1f, 0.3f, 1f);
     [SerializeField, Min(1)] private int danioLaserCuadricula = 1;
 
-    [Header("Animaciones (Opcional)")]
+    [Header("Animaciones")]
     [SerializeField] private Animator anim;
-    [SerializeField] private AnimationClip aIdle;
-    [SerializeField] private AnimationClip aMover;
-    [SerializeField] private AnimationClip aDash;
-    [SerializeField] private AnimationClip aAtaqueMelee;
-    [SerializeField] private AnimationClip aDisparo;
-    [SerializeField] private AnimationClip aInvocar;
+    [SerializeField] private AnimationClip aCaminarAbajo;
+    [SerializeField] private AnimationClip aPrepararMeleeGrande;
+    [SerializeField] private AnimationClip aLanzarMeleeGrande;
+    [SerializeField] private AnimationClip aPrepararRadialZigZag;
+    [SerializeField] private AnimationClip aLanzarMetralleta;
+    [SerializeField] private AnimationClip aCargarMeleeLargo;
+    [SerializeField] private AnimationClip aLanzarMeleeLargo;
+    [SerializeField] private AnimationClip aModoInvulnerable;
+    [SerializeField] private AnimationClip aLanzarPatronesTouhou;
+    [SerializeField] private AnimationClip aLanzarCuadriculaLaser;
+    [SerializeField] private AnimationClip aVencida;
 
     public float RangoDeteccion => rangoDeteccion;
 
@@ -111,6 +116,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
     private bool enFase2;
     private bool ejecutandoAccion;
     private bool dasheando;
+    private bool vencida;
     private float timerCdDash;
     private float timerPausaAtaque;
     private Vector2 velObjetivo;
@@ -158,8 +164,13 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
             Physics2D.IgnoreCollision(miCol, colP, true);
         }
 
+        if (aVencida != null)
+        {
+            vida.EstablecerRetrasoDestruccion(aVencida.length);
+        }
+
         vida.AlRecibirDanio.AddListener(VerificarCambioDeFase);
-        vida.AlMorir.AddListener(LimpiarAlMorir);
+        vida.AlMorir.AddListener(EjecutarDerrota);
         timerCdDash = cdDash;
         timerPausaAtaque = 1f;
     }
@@ -179,7 +190,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
 
     void Update()
     {
-        if (!player) return;
+        if (vencida || !player) return;
 
         timerCdDash -= Time.deltaTime;
         if (!ejecutandoAccion) timerPausaAtaque -= Time.deltaTime;
@@ -193,7 +204,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         if (dist > rangoDeteccion && !ejecutandoAccion)
         {
             velObjetivo = Vector2.zero;
-            ReproducirAnim(aIdle);
+            ReproducirAnim(aCaminarAbajo);
             return;
         }
 
@@ -222,12 +233,18 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         {
             Vector2 dir = ((Vector2)player.position - (Vector2)transform.position).normalized;
             velObjetivo = dist > 3.5f ? dir * velocidadBase : Vector2.zero;
-            ReproducirAnim(velObjetivo.sqrMagnitude > 0.1f ? aMover : aIdle);
+            ReproducirAnim(aCaminarAbajo);
         }
     }
 
     void FixedUpdate()
     {
+        if (vencida)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
         if (aturdido != null && aturdido.EstaAturdido)
         {
             rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, desaceleracion * Time.fixedDeltaTime);
@@ -329,7 +346,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         dirDash = (haciaJugador * 0.65f + perpendicular * 0.35f).normalized;
 
         if (Mathf.Abs(dirDash.x) > 0.1f) sprite.flipX = dirDash.x < 0f;
-        ReproducirAnim(aDash != null ? aDash : aMover);
+        ReproducirAnim(aCaminarAbajo);
 
         float t = duracionDash;
         while (t > 0f)
@@ -346,7 +363,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
     private IEnumerator RutinaMeleeGrande()
     {
         ejecutandoAccion = true;
-        ReproducirAnim(aMover);
+        ReproducirAnim(aCaminarAbajo);
 
         float tiempoMaxAcercamiento = 2.5f;
         while (tiempoMaxAcercamiento > 0f && player != null && Vector2.Distance(transform.position, player.position) > distAcercamientoMelee)
@@ -360,7 +377,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
 
         velObjetivo = Vector2.zero;
         rb.linearVelocity = Vector2.zero;
-        ReproducirAnim(aIdle);
+        ReproducirAnim(aPrepararMeleeGrande);
 
         Vector2 dirAtaque = player != null ? ((Vector2)player.position - (Vector2)transform.position).normalized : Vector2.down;
         if (dirAtaque == Vector2.zero) dirAtaque = Vector2.down;
@@ -369,7 +386,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         yield return new WaitForSeconds(tiempoQuietoAntesMelee);
         if (Bloqueado()) { FinalizarAccion(); yield break; }
 
-        ReproducirAnim(aAtaqueMelee);
+        ReproducirAnim(aLanzarMeleeGrande);
         Vector2 centro = (Vector2)transform.position + dirAtaque * offsetMeleeGrande;
         float angulo = Mathf.Atan2(dirAtaque.y, dirAtaque.x) * Mathf.Rad2Deg;
 
@@ -383,7 +400,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
     {
         ejecutandoAccion = true;
         velObjetivo = Vector2.zero;
-        ReproducirAnim(aDisparo);
+        ReproducirAnim(aPrepararRadialZigZag);
 
         indicador.MostrarAviso(tiempoBrilloAntesAtaque);
         yield return new WaitForSeconds(tiempoBrilloAntesAtaque);
@@ -417,7 +434,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
     {
         ejecutandoAccion = true;
         velObjetivo = Vector2.zero;
-        ReproducirAnim(aDisparo);
+        ReproducirAnim(aLanzarMetralleta);
 
         indicador.MostrarAviso(tiempoBrilloAntesAtaque);
         yield return new WaitForSeconds(tiempoBrilloAntesAtaque);
@@ -443,7 +460,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
     private IEnumerator RutinaSuperMeleeLargo()
     {
         ejecutandoAccion = true;
-        ReproducirAnim(aAtaqueMelee);
+        ReproducirAnim(aCargarMeleeLargo);
 
         indicador.MostrarAviso(tiempoCargaSuperMelee);
 
@@ -481,6 +498,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
 
         velObjetivo = Vector2.zero;
         rb.linearVelocity = Vector2.zero;
+        ReproducirAnim(aLanzarMeleeLargo);
 
         lineaGuia.startColor = colorImpactoMeleeLargo;
         lineaGuia.endColor = colorImpactoMeleeLargo;
@@ -538,7 +556,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         ejecutandoAccion = true;
         velObjetivo = Vector2.zero;
         rb.linearVelocity = Vector2.zero;
-        ReproducirAnim(aInvocar != null ? aInvocar : aIdle);
+        ReproducirAnim(aModoInvulnerable);
 
         vida.ActivarInvulnerabilidad(duracionInvulnerableInvocacion);
         sprite.color = colorInvulnerable;
@@ -615,7 +633,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
     {
         ejecutandoAccion = true;
         velObjetivo = Vector2.zero;
-        ReproducirAnim(aDisparo);
+        ReproducirAnim(aLanzarPatronesTouhou);
 
         indicador.MostrarAviso(tiempoBrilloAntesAtaque);
         yield return new WaitForSeconds(tiempoBrilloAntesAtaque);
@@ -662,7 +680,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
     {
         ejecutandoAccion = true;
         velObjetivo = Vector2.zero;
-        ReproducirAnim(aInvocar != null ? aInvocar : aDisparo);
+        ReproducirAnim(aLanzarCuadriculaLaser);
 
         indicador.MostrarAviso(tiempoAvisoCuadricula);
 
@@ -768,9 +786,18 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
 
     private bool Bloqueado() => (aturdido != null && aturdido.EstaAturdido) || (empuje != null && empuje.EstaEmpujado);
 
-    private void LimpiarAlMorir()
+    private void EjecutarDerrota()
     {
+        vencida = true;
+        StopAllCoroutines();
+        if (indicador != null) indicador.CancelarAviso();
         if (lineaGuia != null) lineaGuia.enabled = false;
+        if (sprite != null) sprite.color = colorBase;
+
+        velObjetivo = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
+        ReproducirAnim(aVencida);
+
         for (int i = 0; i < enemigosInvocados.Count; i++)
         {
             if (enemigosInvocados[i] != null)
@@ -782,6 +809,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
 
     void OnDisable()
     {
+        if (vencida) return;
         StopAllCoroutines();
         if (indicador != null) indicador.CancelarAviso();
         if (lineaGuia != null) lineaGuia.enabled = false;

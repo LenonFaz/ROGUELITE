@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(SpriteRenderer))]
 public class Ghoul : MonoBehaviour, IRangoDeteccion
 {
     [Header("Referencias")]
@@ -25,6 +26,17 @@ public class Ghoul : MonoBehaviour, IRangoDeteccion
     [SerializeField, Min(0f)] private float fuerzaEmpuje = 6f;
     [SerializeField] private LayerMask capaJugador;
 
+    [Header("Animaciones")]
+    [SerializeField] private Animator anim;
+    [SerializeField] private SpriteRenderer sprite;
+    [SerializeField] private AnimationClip aQuieto;
+    [SerializeField] private AnimationClip aCaminarAbajo;
+    [SerializeField] private AnimationClip aCaminarArriba;
+    [SerializeField] private AnimationClip aPrepararAbajo;
+    [SerializeField] private AnimationClip aPrepararArriba;
+    [SerializeField] private AnimationClip aGolpearAbajo;
+    [SerializeField] private AnimationClip aGolpearArriba;
+
     [Header("Debug")]
     [SerializeField] private bool mostrarGizmo = true;
     [SerializeField] private Color colorHitbox = new Color(1f, 0.4f, 0f);
@@ -45,6 +57,7 @@ public class Ghoul : MonoBehaviour, IRangoDeteccion
     private Vector2 dirAtaque = Vector2.down;
     private float distancia;
     private bool yaGolpeoEnImpulso;
+    private string animActual;
 
     void Awake()
     {
@@ -56,6 +69,8 @@ public class Ghoul : MonoBehaviour, IRangoDeteccion
         TryGetComponent(out aturdido);
         TryGetComponent(out empuje);
         if (!TryGetComponent(out indicador)) indicador = gameObject.AddComponent<IndicadorAtaque>();
+        if (!anim) TryGetComponent(out anim);
+        if (!sprite) TryGetComponent(out sprite);
     }
 
     void Start()
@@ -88,6 +103,7 @@ public class Ghoul : MonoBehaviour, IRangoDeteccion
                 estadoActual = Estado.Persiguiendo;
                 indicador.CancelarAviso();
             }
+            ActualizarAnimaciones();
             return;
         }
 
@@ -138,6 +154,8 @@ public class Ghoul : MonoBehaviour, IRangoDeteccion
                 }
                 break;
         }
+
+        ActualizarAnimaciones();
     }
 
     void FixedUpdate()
@@ -169,6 +187,54 @@ public class Ghoul : MonoBehaviour, IRangoDeteccion
             case Estado.Impulsando:
                 rb.linearVelocity = dirAtaque * velocidadImpulso;
                 break;
+        }
+    }
+
+    private void ActualizarAnimaciones()
+    {
+        if (!sprite) return;
+
+        Vector2 dirRef = (estadoActual == Estado.Preparando || estadoActual == Estado.Impulsando) ? dirAtaque : direccion;
+        if (Mathf.Abs(dirRef.x) > 0.05f)
+        {
+            sprite.flipX = dirRef.x < 0f;
+        }
+
+        if (!anim) return;
+
+        bool mirandoArriba = dirRef.y > 0f;
+        AnimationClip clip = aQuieto;
+
+        switch (estadoActual)
+        {
+            case Estado.Preparando:
+                clip = mirandoArriba ? aPrepararArriba : aPrepararAbajo;
+                break;
+
+            case Estado.Impulsando:
+                clip = mirandoArriba ? aGolpearArriba : aGolpearAbajo;
+                break;
+
+            case Estado.Recuperando:
+                clip = aQuieto;
+                break;
+
+            case Estado.Persiguiendo:
+                if (rb.linearVelocity.sqrMagnitude > 0.05f && !Bloqueado())
+                {
+                    clip = mirandoArriba ? aCaminarArriba : aCaminarAbajo;
+                }
+                else
+                {
+                    clip = aQuieto;
+                }
+                break;
+        }
+
+        if (clip != null && animActual != clip.name)
+        {
+            anim.Play(clip.name);
+            animActual = clip.name;
         }
     }
 

@@ -49,6 +49,7 @@ GameObject:
   - component: {fileID: 6793208628922281850}
   - component: {fileID: 5347742296180362969}
   - component: {fileID: 101862781645427324}
+  - component: {fileID: 4894498955636251978}
   m_Layer: 3
   m_Name: Magg
   m_TagString: Untagged
@@ -121,7 +122,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -3860403664501540548, guid: 5ea6676f9a8dc9a4b9dfbc8b53d8ebe0, type: 3}
+  m_Sprite: {fileID: -330470426, guid: 5e9c5d6a64425064fb6b62523e9b7665, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -175,7 +176,7 @@ MonoBehaviour:
   velLentaAtaque: 0.65
   acel: 15
   desacel: 7
-  rangoDet: 7
+  rangoDet: 9.5
   distMax: 5
   distMin: 3
   prefabBullet: {fileID: 6588300776097158777, guid: 936d15bf493311a45b4cb7eb8530d630, type: 3}
@@ -187,11 +188,13 @@ MonoBehaviour:
   anguloImprecision: 11
   velocidadBala: 5
   danioBala: 1
-  anim: {fileID: 0}
-  sprite: {fileID: 0}
-  aIdle: {fileID: 7400000, guid: b78a2e96fe0b58340b8b0a490449344e, type: 2}
-  aMover: {fileID: 7400000, guid: 9866549bf9eb9bc42abd3ff5e03e9c08, type: 2}
-  aAtacar: {fileID: 7400000, guid: bfd0e659486012849b9752865d48488b, type: 2}
+  anim: {fileID: 6793208628922281850}
+  sprite: {fileID: 6620765342723531653}
+  aQuieta: {fileID: 7400000, guid: b78a2e96fe0b58340b8b0a490449344e, type: 2}
+  aCaminarArriba: {fileID: 7400000, guid: 8f237de8ed48e9145b2ead2d876423d7, type: 2}
+  aCaminarAbajo: {fileID: 7400000, guid: 6140f16722686c64c8674a31889b161e, type: 2}
+  aPrepararArriba: {fileID: 7400000, guid: 2cc9409cbec001c49ac1e80c853ef3c2, type: 2}
+  aPrepararAbajo: {fileID: 7400000, guid: e044dff80f0ca164ebd85da5fe33eaef, type: 2}
 --- !u!114 &7980259444280999136
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -207,6 +210,7 @@ MonoBehaviour:
   vidaMaxima: 3
   esJugador: 0
   tiempoInvulnerabilidadDanio: 0.6
+  retrasoDestruccionAlMorir: 0
   AlRecibirDanio:
     m_PersistentCalls:
       m_Calls: []
@@ -317,3 +321,19 @@ MonoBehaviour:
   tagsTerreno:
   - pared
   - hueco
+--- !u!114 &4894498955636251978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 694804705212856190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4eae664ac996054f895f5e530736ad3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IndicadorAtaque
+  colorBorde: {r: 0.003921569, g: 0.65882355, b: 0.99607843, a: 1}
+  grosorBorde: 0.03125
+  velocidadParpadeo: 14
+  incluirDiagonales: 0

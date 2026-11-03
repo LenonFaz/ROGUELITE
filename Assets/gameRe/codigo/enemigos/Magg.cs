@@ -31,9 +31,11 @@ public class Magg : MonoBehaviour, IRangoDeteccion
     [Header("Animaciones")]
     [SerializeField] private Animator anim;
     [SerializeField] private SpriteRenderer sprite;
-    [SerializeField] private AnimationClip aIdle;
-    [SerializeField] private AnimationClip aMover;
-    [SerializeField] private AnimationClip aAtacar;
+    [SerializeField] private AnimationClip aQuieta;
+    [SerializeField] private AnimationClip aCaminarArriba;
+    [SerializeField] private AnimationClip aCaminarAbajo;
+    [SerializeField] private AnimationClip aPrepararArriba;
+    [SerializeField] private AnimationClip aPrepararAbajo;
 
     public float RangoDeteccion => rangoDet;
 
@@ -92,7 +94,7 @@ public class Magg : MonoBehaviour, IRangoDeteccion
     {
         if (!player) return;
 
-        if (Mathf.Abs(player.position.x - transform.position.x) > 0.1f)
+        if (Mathf.Abs(player.position.x - transform.position.x) > 0.05f)
         {
             sprite.flipX = player.position.x < transform.position.x;
         }
@@ -210,17 +212,19 @@ public class Magg : MonoBehaviour, IRangoDeteccion
 
     void ActualizarAnim(Vector2 velObj)
     {
-        if (!anim || !sprite) return;
+        if (!anim || !sprite || !player) return;
 
-        AnimationClip clipObj = aIdle;
+        bool mirandoArriba = player.position.y > transform.position.y;
+        AnimationClip clipObj = aQuieta;
 
         if (preparandose || atacando)
         {
-            clipObj = aAtacar != null ? aAtacar : aMover;
+            clipObj = mirandoArriba ? aPrepararArriba : aPrepararAbajo;
         }
         else if (velObj != Vector2.zero || rb.linearVelocity.sqrMagnitude > 0.05f)
         {
-            clipObj = aMover;
+            bool movArriba = rb.linearVelocity.sqrMagnitude > 0.05f ? rb.linearVelocity.y > 0f : mirandoArriba;
+            clipObj = movArriba ? aCaminarArriba : aCaminarAbajo;
         }
 
         if (clipObj && animActual != clipObj.name)

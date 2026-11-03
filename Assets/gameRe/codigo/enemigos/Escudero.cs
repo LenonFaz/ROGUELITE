@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(SpriteRenderer))]
 public class Escudero : MonoBehaviour, IRangoDeteccion
 {
     [Header("Referencias")]
@@ -24,6 +25,16 @@ public class Escudero : MonoBehaviour, IRangoDeteccion
     [SerializeField, Min(0f)] private float fuerzaEmpuje = 8f;
     [SerializeField] private LayerMask capaJugador;
 
+    [Header("Animaciones")]
+    [SerializeField] private Animator anim;
+    [SerializeField] private SpriteRenderer sprite;
+    [SerializeField] private AnimationClip aCaminarArriba;
+    [SerializeField] private AnimationClip aCaminarAbajo;
+    [SerializeField] private AnimationClip aPrepararCarga;
+    [SerializeField] private AnimationClip aCargaArriba;
+    [SerializeField] private AnimationClip aCargaAbajo;
+    [SerializeField] private AnimationClip aCargaDerecha;
+
     public float RangoDeteccion => rangoDet;
 
     private enum Estado { Acercando, Aviso, Cargando, Recuperando }
@@ -36,6 +47,7 @@ public class Escudero : MonoBehaviour, IRangoDeteccion
     private float timer;
     private Vector2 dirCarga;
     private bool golpeo;
+    private string animActual;
 
     void Awake()
     {
@@ -47,6 +59,8 @@ public class Escudero : MonoBehaviour, IRangoDeteccion
         TryGetComponent(out aturdido);
         TryGetComponent(out empuje);
         if (!TryGetComponent(out indicador)) indicador = gameObject.AddComponent<IndicadorAtaque>();
+        if (!anim) TryGetComponent(out anim);
+        if (!sprite) TryGetComponent(out sprite);
     }
 
     void Start()
@@ -77,6 +91,7 @@ public class Escudero : MonoBehaviour, IRangoDeteccion
         {
             estado = Estado.Acercando;
             indicador.CancelarAviso();
+            ActualizarAnimaciones();
             return;
         }
 
@@ -112,6 +127,8 @@ public class Escudero : MonoBehaviour, IRangoDeteccion
                 if (timer <= 0f) estado = Estado.Acercando;
                 break;
         }
+
+        ActualizarAnimaciones();
     }
 
     void FixedUpdate()
@@ -151,6 +168,48 @@ public class Escudero : MonoBehaviour, IRangoDeteccion
                 rb.linearVelocity = dirCarga * velCarga;
                 GolpearJugador();
                 break;
+        }
+    }
+
+    private void ActualizarAnimaciones()
+    {
+        if (!sprite || !player) return;
+
+        Vector2 haciaJugador = (Vector2)player.position - (Vector2)transform.position;
+        AnimationClip clip = null;
+
+        switch (estado)
+        {
+            case Estado.Aviso:
+                if (Mathf.Abs(dirCarga.x) > 0.05f) sprite.flipX = dirCarga.x < 0f;
+                clip = aPrepararCarga;
+                break;
+
+            case Estado.Cargando:
+                if (Mathf.Abs(dirCarga.x) >= Mathf.Abs(dirCarga.y))
+                {
+                    sprite.flipX = dirCarga.x < 0f;
+                    clip = aCargaDerecha;
+                }
+                else
+                {
+                    sprite.flipX = false;
+                    clip = dirCarga.y > 0f ? aCargaArriba : aCargaAbajo;
+                }
+                break;
+
+            case Estado.Acercando:
+            case Estado.Recuperando:
+                if (Mathf.Abs(haciaJugador.x) > 0.05f) sprite.flipX = haciaJugador.x < 0f;
+                bool mirandoArriba = rb.linearVelocity.sqrMagnitude > 0.05f ? rb.linearVelocity.y > 0f : haciaJugador.y > 0f;
+                clip = mirandoArriba ? aCaminarArriba : aCaminarAbajo;
+                break;
+        }
+
+        if (anim != null && clip != null && animActual != clip.name)
+        {
+            anim.Play(clip.name);
+            animActual = clip.name;
         }
     }
 

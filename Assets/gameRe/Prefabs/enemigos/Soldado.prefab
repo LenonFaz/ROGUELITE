@@ -18,6 +18,8 @@ GameObject:
   - component: {fileID: 7096029879129166312}
   - component: {fileID: 5953714264814011729}
   - component: {fileID: 1284551159909015913}
+  - component: {fileID: 4927722554150220230}
+  - component: {fileID: 5739243387493015143}
   m_Layer: 3
   m_Name: Soldado
   m_TagString: Untagged
@@ -89,7 +91,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1279641216440365143, guid: 418b3984ec618f7468cfe77baeeb6e62, type: 3}
+  m_Sprite: {fileID: -6896956443806377937, guid: c7fd823ceb0adec4eab8df2e0ac69641, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -140,6 +142,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Vida
   vidaMaxima: 2
   esJugador: 0
+  tiempoInvulnerabilidadDanio: 0.6
+  retrasoDestruccionAlMorir: 0
   AlRecibirDanio:
     m_PersistentCalls:
       m_Calls: []
@@ -192,6 +196,10 @@ MonoBehaviour:
   desaceleracion: 17
   rangoDeteccion: 5.5
   rangoAtaque: 1.36
+  tiempoQuietoAntes: 0.35
+  velocidadImpulso: 7.5
+  duracionImpulso: 0.15
+  tiempoQuietoDespues: 0.4
   tamHitbox: {x: 0.71, y: 1.17}
   offsetHitbox: 0.71
   cooldown: 0.7
@@ -200,6 +208,15 @@ MonoBehaviour:
   capaJugador:
     serializedVersion: 2
     m_Bits: 64
+  anim: {fileID: 0}
+  sprite: {fileID: 5300230453451060126}
+  aQuieto: {fileID: 7400000, guid: fb07eaea843884a4da80dc0877e1de41, type: 2}
+  aCaminarAbajo: {fileID: 7400000, guid: bd29d3eb7cf376f468e1e6acfa8b417b, type: 2}
+  aCaminarArriba: {fileID: 7400000, guid: d68b2c7610b60dc4e89d90fc3a1597ad, type: 2}
+  aPrepararAbajo: {fileID: 7400000, guid: 416930602eaacb342884845f376ac0c9, type: 2}
+  aPrepararArriba: {fileID: 7400000, guid: e44f1dba18c3f574e88b7671bb59c5da, type: 2}
+  aGolpearAbajo: {fileID: 7400000, guid: adcd6fe09fc2d2f489093a6b757feec7, type: 2}
+  aGolpearArriba: {fileID: 7400000, guid: 2cf55d806faf29a4ea3657f535f8fedf, type: 2}
   mostrarGizmo: 1
   colorHitbox: {r: 1, g: 0.4, b: 0, a: 1}
 --- !u!120 &7096029879129166312
@@ -360,9 +377,47 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f17675282d5d37141910ab71b6268d46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MargenTerreno
-  radioMargen: 4
+  radioMargen: 0.8
   fuerzaRepulsion: 3
   cantidadRayos: 12
   tagsTerreno:
   - pared
   - hueco
+--- !u!114 &4927722554150220230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7020154397301498871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4eae664ac996054f895f5e530736ad3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IndicadorAtaque
+  colorBorde: {r: 0.003921569, g: 0.65882355, b: 0.99607843, a: 1}
+  grosorBorde: 0.03125
+  velocidadParpadeo: 14
+  incluirDiagonales: 0
+--- !u!95 &5739243387493015143
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7020154397301498871}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 77609f4aa9eeba64bbfe75488f457077, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
