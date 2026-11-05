@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 1166088174673054882}
   - component: {fileID: 6588300776097158777}
   - component: {fileID: 7502395400626538349}
-  - component: {fileID: 8723445885739381019}
+  - component: {fileID: 6055729996840415914}
   m_Layer: 3
   m_Name: bullet_0
   m_TagString: Untagged
@@ -184,6 +184,7 @@ MonoBehaviour:
   colorTrailInicio: {r: 0, g: 0.6627451, b: 0.9960785, a: 0.85}
   colorTrailFin: {r: 0, g: 0.6176338, b: 1, a: 0}
   activarLuz: 1
+  luzPrefab: {fileID: 0}
   colorLuz: {r: 0, g: 0.6627451, b: 0.9960785, a: 0.75}
   radioLuz: 0.5
   intensidadLuz: 4
@@ -297,7 +298,7 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
---- !u!114 &8723445885739381019
+--- !u!114 &6055729996840415914
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -312,12 +313,12 @@ MonoBehaviour:
   m_ComponentVersion: 2
   m_LightType: 3
   m_BlendStyleIndex: 0
-  m_FalloffIntensity: 0.5
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
+  m_FalloffIntensity: 0.574
+  m_Color: {r: 0, g: 0.6627451, b: 1, a: 1}
+  m_Intensity: 12
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
-  m_ApplyToSortingLayers: 
+  m_ApplyToSortingLayers: fdb2403935e57b44db6acfd51b69a975518163d200000000
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -338,7 +339,7 @@ MonoBehaviour:
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
-  m_PointLightOuterRadius: 1
+  m_PointLightOuterRadius: 1.65
   m_ShapeLightParametricSides: 5
   m_ShapeLightParametricAngleOffset: 0
   m_ShapeLightParametricRadius: 1

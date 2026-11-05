@@ -88,7 +88,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_MaskInteraction: 0
   m_Sprite: {fileID: 9143400894538416559, guid: 6f60f0144ee71924aaae958b500c01fe, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -185,13 +185,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07305073373e53d449b8ab6d9ee982f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Jugador
-  vel: 6
-  acel: 45
-  desacel: 60
-  velDash: 14.9
-  durDash: 0.12
+  vel: 8
+  acel: 62
+  desacel: 69
+  velDash: 18
+  durDash: 0.09
   cdDash: 0.6
+  controlEnDash: 20
   invulnerableEnDash: 1
+  durInvulnerableDash: 0.2
   usarImagenResidual: 1
   intervaloResidual: 0.04
   duracionResidual: 0.4
@@ -204,9 +206,9 @@ MonoBehaviour:
   aMoveDown: {fileID: 7400000, guid: 230b642d3e2f7734d80cee130aa82322, type: 2}
   aMoveUp: {fileID: 7400000, guid: 16c18ed5f5ea6dd4ba0719bf3b8764da, type: 2}
   aMoveRight: {fileID: 7400000, guid: 7228a45effe9c2c4fa3000e5602e4064, type: 2}
-  aDashDown: {fileID: 0}
-  aDashUp: {fileID: 0}
-  aDashRight: {fileID: 0}
+  aDashDown: {fileID: 7400000, guid: 1598b6041b463684b92a2e68f143f8c4, type: 2}
+  aDashUp: {fileID: 7400000, guid: a9a9f2073cfe2474387428f0982ab394, type: 2}
+  aDashRight: {fileID: 7400000, guid: 647c221a1f566dc4bbdbe4f8f731f76b, type: 2}
   vida: {fileID: 0}
   empuje: {fileID: 0}
   ataque: {fileID: 0}
@@ -223,13 +225,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AtaqueJugador
   offsetHitbox: 0.28
-  tamHitbox: {x: 2.13, y: 1.5}
-  cooldown: 0.42
+  tamHitbox: {x: 2.37, y: 1.5}
+  cooldown: 0.4
   capaEnemigos:
     serializedVersion: 2
     m_Bits: 8
   danio: 1
-  fuerzaEmpuje: 9.2
+  fuerzaEmpuje: 9.8
   animJugador: {fileID: 0}
   spriteJugador: {fileID: 0}
   duracionAnimAtaque: 0.2
@@ -448,7 +450,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Vida
   vidaMaxima: 5
   esJugador: 1
-  tiempoInvulnerabilidadDanio: 0.6
+  tiempoInvulnerabilidadDanio: 0.3
+  retrasoDestruccionAlMorir: 0
   AlRecibirDanio:
     m_PersistentCalls:
       m_Calls: []

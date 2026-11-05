@@ -15,9 +15,11 @@ public class Jugador : MonoBehaviour
     [SerializeField, Min(0f)] private float velDash = 14.9f;
     [SerializeField, Min(0f)] private float durDash = 0.12f;
     [SerializeField, Min(0f)] private float cdDash = 0.6f;
+    [SerializeField, Min(0f)] private float controlEnDash = 12f;
     [SerializeField] private bool invulnerableEnDash = true;
+    [SerializeField, Min(0f)] private float durInvulnerableDash = 0.25f;
 
-    [Header("Efecto Dash (Imagen Residual)")]
+    [Header("Efecto Imagen Residual")]
     [SerializeField] private bool usarImagenResidual = true;
     [SerializeField, Min(0.01f)] private float intervaloResidual = 0.03f;
     [SerializeField, Min(0.05f)] private float duracionResidual = 0.2f;
@@ -44,17 +46,19 @@ public class Jugador : MonoBehaviour
     private Rigidbody2D rb;
     private Vector2 inputMov;
     private Vector2 ultimaDir = Vector2.down;
+    private Vector2 dirDash = Vector2.down;
 
     private float velBase;
     private bool dasheando;
     private bool puedeDashear = true;
     private float tDash;
+    private float tInvulnerableDash;
     private float tCdDash;
     private float tResidual;
     private string animActual;
 
     public bool EstaDasheando => dasheando;
-    public bool EsInvulnerablePorDash => dasheando && invulnerableEnDash;
+    public bool EsInvulnerablePorDash => invulnerableEnDash && tInvulnerableDash > 0f;
     public Vector2 UltimaDireccion => ultimaDir;
 
     void Awake()
@@ -118,14 +122,20 @@ public class Jugador : MonoBehaviour
         tCdDash = cdDash;
         tResidual = 0f;
 
-        if (inputMov.sqrMagnitude > 0.01f)
+        dirDash = inputMov.sqrMagnitude > 0.01f ? inputMov.normalized : ultimaDir;
+
+        if (ataque == null || !ataque.EstaAtacando)
         {
-            ultimaDir = inputMov.normalized;
+            ultimaDir = dirDash;
         }
 
-        if (invulnerableEnDash && vida != null)
+        if (invulnerableEnDash && durInvulnerableDash > 0f)
         {
-            vida.ActivarInvulnerabilidad(durDash);
+            tInvulnerableDash = durInvulnerableDash;
+            if (vida != null)
+            {
+                vida.ActivarInvulnerabilidad(durInvulnerableDash);
+            }
         }
     }
 
@@ -147,7 +157,16 @@ public class Jugador : MonoBehaviour
 
         if (dasheando)
         {
-            rb.linearVelocity = ultimaDir * velDash;
+            if (inputMov.sqrMagnitude > 0.01f)
+            {
+                dirDash = Vector2.Lerp(dirDash, inputMov.normalized, controlEnDash * Time.fixedDeltaTime).normalized;
+                if (ataque == null || !ataque.EstaAtacando)
+                {
+                    ultimaDir = dirDash;
+                }
+            }
+
+            rb.linearVelocity = dirDash * velDash;
             return;
         }
 
@@ -161,20 +180,30 @@ public class Jugador : MonoBehaviour
         if (dasheando)
         {
             tDash -= dt;
-            if (usarImagenResidual)
-            {
-                tResidual -= dt;
-                if (tResidual <= 0f)
-                {
-                    CrearImagenResidual();
-                    tResidual = intervaloResidual;
-                }
-            }
-
             if (tDash <= 0f)
             {
                 dasheando = false;
             }
+        }
+
+        if (tInvulnerableDash > 0f)
+        {
+            tInvulnerableDash -= dt;
+        }
+
+        bool generarResidual = usarImagenResidual && (dasheando || EsInvulnerablePorDash || (vida != null && vida.EsInvulnerable));
+        if (generarResidual)
+        {
+            tResidual -= dt;
+            if (tResidual <= 0f)
+            {
+                CrearImagenResidual();
+                tResidual = intervaloResidual;
+            }
+        }
+        else
+        {
+            tResidual = 0f;
         }
 
         if (!puedeDashear)
@@ -208,7 +237,7 @@ public class Jugador : MonoBehaviour
 
     private void ActualizarVolteoSprite()
     {
-        if (!sprite || dasheando) return;
+        if (!sprite) return;
         if (ataque != null && ataque.EstaAtacando) return;
 
         ActualizarVolteoForzado();
@@ -218,9 +247,11 @@ public class Jugador : MonoBehaviour
     {
         if (!sprite) return;
 
-        if (Mathf.Abs(ultimaDir.x) >= Mathf.Abs(ultimaDir.y))
+        Vector2 dirRef = dasheando ? dirDash : ultimaDir;
+
+        if (Mathf.Abs(dirRef.x) >= Mathf.Abs(dirRef.y))
         {
-            sprite.flipX = ultimaDir.x < 0f;
+            sprite.flipX = dirRef.x < 0f;
         }
         else
         {
@@ -238,24 +269,25 @@ public class Jugador : MonoBehaviour
         }
 
         bool moviendo = inputMov.sqrMagnitude > 0.01f;
-        bool esHorizontal = Mathf.Abs(ultimaDir.x) >= Mathf.Abs(ultimaDir.y);
+        Vector2 dirRef = dasheando ? dirDash : ultimaDir;
+        bool esHorizontal = Mathf.Abs(dirRef.x) >= Mathf.Abs(dirRef.y);
 
         AnimationClip clip = null;
 
         if (dasheando)
         {
             if (esHorizontal) clip = aDashRight != null ? aDashRight : aMoveRight;
-            else clip = ultimaDir.y > 0f ? (aDashUp != null ? aDashUp : aMoveUp) : (aDashDown != null ? aDashDown : aMoveDown);
+            else clip = dirRef.y > 0f ? (aDashUp != null ? aDashUp : aMoveUp) : (aDashDown != null ? aDashDown : aMoveDown);
         }
         else if (moviendo)
         {
             if (esHorizontal) clip = aMoveRight;
-            else clip = ultimaDir.y > 0f ? aMoveUp : aMoveDown;
+            else clip = dirRef.y > 0f ? aMoveUp : aMoveDown;
         }
         else
         {
             if (esHorizontal) clip = aIdleRight;
-            else clip = ultimaDir.y > 0f ? aIdleUp : aIdleDown;
+            else clip = dirRef.y > 0f ? aIdleUp : aIdleDown;
         }
 
         if (clip != null && animActual != clip.name)

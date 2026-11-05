@@ -22,7 +22,8 @@ public class Bullet : MonoBehaviour
     [SerializeField] private float anchoTrail = 0.22f;
     [SerializeField] private Color colorTrailInicio = new Color(1f, 0.35f, 0.35f, 0.85f);
     [SerializeField] private Color colorTrailFin = new Color(1f, 0.1f, 0.1f, 0f);
-    [SerializeField] private bool activarLuz = true;
+    [SerializeField] private bool activarLuz = false;
+    [SerializeField] private Light2D luzPrefab;
     [SerializeField] private Color colorLuz = new Color(1f, 0.25f, 0.25f, 1f);
     [SerializeField] private float radioLuz = 1.6f;
     [SerializeField] private float intensidadLuz = 1.2f;
@@ -57,11 +58,7 @@ public class Bullet : MonoBehaviour
 
     private void ConfigurarEfectosVisuales()
     {
-        if (TryGetComponent(out SpriteRenderer sr) && sr.sharedMaterial == null)
-        {
-            Shader s = Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default") ?? Shader.Find("Sprites/Default");
-            if (s != null) sr.sharedMaterial = new Material(s);
-        }
+        TryGetComponent(out SpriteRenderer sr);
 
         if (activarTrail)
         {
@@ -72,14 +69,14 @@ public class Bullet : MonoBehaviour
 
             if (materialTrailCompartido == null)
             {
-                Shader shaderValido = Shader.Find("Sprites/Default") ?? Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+                Shader shaderValido = Shader.Find("Sprites/Default");
                 if (shaderValido != null)
                 {
                     materialTrailCompartido = new Material(shaderValido);
                 }
             }
 
-            if (tr.sharedMaterial == null || tr.sharedMaterial.shader == null || tr.sharedMaterial.shader.name == "Hidden/InternalErrorShader")
+            if (materialTrailCompartido != null)
             {
                 tr.sharedMaterial = materialTrailCompartido;
             }
@@ -90,20 +87,24 @@ public class Bullet : MonoBehaviour
             tr.startColor = colorTrailInicio;
             tr.endColor = colorTrailFin;
             tr.numCapVertices = 2;
-            tr.sortingOrder = sr != null ? sr.sortingOrder - 1 : 0;
+            if (sr != null)
+            {
+                tr.sortingLayerID = sr.sortingLayerID;
+                tr.sortingOrder = sr.sortingOrder - 1;
+            }
         }
 
-        if (activarLuz)
+        if (!luzPrefab) TryGetComponent(out luzPrefab);
+        if (luzPrefab != null)
         {
-            if (!TryGetComponent(out Light2D luz))
+            luzPrefab.enabled = activarLuz;
+            if (activarLuz && luzPrefab.lightType != Light2D.LightType.Global)
             {
-                luz = gameObject.AddComponent<Light2D>();
+                luzPrefab.color = colorLuz;
+                luzPrefab.pointLightOuterRadius = radioLuz;
+                luzPrefab.intensity = intensidadLuz;
+                luzPrefab.shadowsEnabled = false;
             }
-            luz.lightType = Light2D.LightType.Point;
-            luz.color = colorLuz;
-            luz.pointLightOuterRadius = radioLuz;
-            luz.intensity = intensidadLuz;
-            luz.shadowsEnabled = false;
         }
     }
 

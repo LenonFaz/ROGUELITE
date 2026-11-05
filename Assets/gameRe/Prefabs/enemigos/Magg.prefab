@@ -176,8 +176,8 @@ MonoBehaviour:
   velLentaAtaque: 0.65
   acel: 15
   desacel: 7
-  rangoDet: 9.5
-  distMax: 5
+  rangoDet: 12
+  distMax: 5.5
   distMin: 3
   prefabBullet: {fileID: 6588300776097158777, guid: 936d15bf493311a45b4cb7eb8530d630, type: 3}
   puntoDisparo: {fileID: 5217194001481741022}
