@@ -159,6 +159,7 @@ MonoBehaviour:
   vidaMaxima: 2
   esJugador: 0
   tiempoInvulnerabilidadDanio: 0.6
+  retrasoDestruccionAlMorir: 0
   AlRecibirDanio:
     m_PersistentCalls:
       m_Calls: []
@@ -242,23 +243,16 @@ MonoBehaviour:
   cdTeleport: 1.6
   tpDistMin: 1.2
   tpDistMax: 3
-  limitesMapa: {fileID: 0}
+  tilemapLimites: {fileID: 0}
   margenBorde: 0.5
   intentosMaximos: 30
-  framesDesaparecer:
-  - {fileID: 6033112767088677138, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
-  - {fileID: -6360908336280316510, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
-  - {fileID: 8022837906498448671, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
-  - {fileID: -1190285505119767594, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
-  - {fileID: 4253964680320802253, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
-  - {fileID: -3704024946305501315, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
-  - {fileID: 1698532128155732226, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
-  - {fileID: -3619123036805844023, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
-  - {fileID: -4624766509297278345, guid: 577a177c5a4637b43a585a71519c7a1d, type: 3}
-  fpsDesaparecer: 12
   tiempoFadeOut: 0.2
   tiempoInvisible: 0.2
   tiempoFadeIn: 0.3
+  anim: {fileID: 0}
+  aQuieto: {fileID: 0}
+  aLanzarProyectiles: {fileID: 0}
+  aTeleport: {fileID: 0}
 --- !u!95 &3382309005417959267
 Animator:
   serializedVersion: 7
