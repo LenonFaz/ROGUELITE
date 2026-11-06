@@ -25,13 +25,7 @@ public class LanzallamasBar : MonoBehaviour
 
     void Start()
     {
-        if (rotar == null || bolaPrefab == null)
-        {
-            Debug.LogError("LanzallamasBar: faltan Rotar o Bola Prefab", this);
-            enabled = false;
-            return;
-        }
-
+        
         rotar.localRotation = Quaternion.Euler(0, 0, startAngle);
 
         bolas = new Transform[cantidadBolas];

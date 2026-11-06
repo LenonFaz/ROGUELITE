@@ -264,14 +264,9 @@ MonoBehaviour:
   tiempoDisparo: 0.2
   colorMira: {r: 1, g: 1, b: 1, a: 0.4}
   grosorMira: 0.05
-  colorLaser: {r: 1, g: 0, b: 0, a: 1}
   grosorLaser: 0.8
-  anim: {fileID: 0}
-  sprite: {fileID: 0}
-  aCaminarArriba: {fileID: 0}
-  aCaminarAbajo: {fileID: 0}
-  aCastearLaserArriba: {fileID: 0}
-  aCastearLaserAbajo: {fileID: 0}
+  spriteLaser: {fileID: -2346302928887187388, guid: 209eccae1b116a042a2609af73cdb2e3, type: 3}
+  ordenSpriteLaser: 10
 --- !u!114 &5464658714035150337
 MonoBehaviour:
   m_ObjectHideFlags: 0

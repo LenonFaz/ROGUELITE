@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(SpriteRenderer))]
@@ -27,8 +28,9 @@ public class Espi : MonoBehaviour, IRangoDeteccion
     public float tpDistMin = 3f;
     public float tpDistMax = 5f;
 
-    [Header("Límites del mapa (Opcional)")]
-    public Collider2D limitesMapa;
+    [Header("Límites del mapa")]
+    [Tooltip("Tilemap 'Limites del mapa' (tiles = zonas prohibidas). Si está vacío, no se validan límites.")]
+    public Tilemap tilemapLimites;
     public float margenBorde = 0.5f;
     public int intentosMaximos = 30;
 
@@ -48,6 +50,7 @@ public class Espi : MonoBehaviour, IRangoDeteccion
     private Rigidbody2D rb;
     private SpriteRenderer sprite;
     private Collider2D miCol;
+    private Collider2D colLimites;
     private Empuje empuje;
     private Aturdido aturdido;
     private IndicadorAtaque indicador;
@@ -64,6 +67,8 @@ public class Espi : MonoBehaviour, IRangoDeteccion
         TryGetComponent(out aturdido);
         if (!TryGetComponent(out indicador)) indicador = gameObject.AddComponent<IndicadorAtaque>();
         if (!anim) TryGetComponent(out anim);
+
+        if (tilemapLimites != null) tilemapLimites.TryGetComponent(out colLimites);
 
         rb.bodyType = RigidbodyType2D.Dynamic;
         rb.gravityScale = 0f;
@@ -198,17 +203,7 @@ public class Espi : MonoBehaviour, IRangoDeteccion
             float dist = Random.Range(tpDistMin, tpDistMax);
             Vector2 candidata = (Vector2)player.position + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * dist;
 
-            if (limitesMapa != null)
-            {
-                Bounds limites = limitesMapa.bounds;
-                bool dentro =
-                    candidata.x >= limites.min.x + margenBorde &&
-                    candidata.x <= limites.max.x - margenBorde &&
-                    candidata.y >= limites.min.y + margenBorde &&
-                    candidata.y <= limites.max.y - margenBorde;
-
-                if (!dentro) continue;
-            }
+            if (tilemapLimites != null && !PosicionValida(candidata)) continue;
 
             Collider2D[] colisiones = Physics2D.OverlapCircleAll(candidata, margenBorde);
             bool chocaObstaculo = false;
@@ -226,6 +221,17 @@ public class Espi : MonoBehaviour, IRangoDeteccion
         }
 
         return transform.position;
+    }
+
+    bool PosicionValida(Vector2 punto)
+    {
+        Vector2[] offsets = { Vector2.zero, Vector2.up, Vector2.down, Vector2.left, Vector2.right };
+        for (int i = 0; i < offsets.Length; i++)
+        {
+            Vector3Int celda = tilemapLimites.WorldToCell(punto + offsets[i] * margenBorde);
+            if (!tilemapLimites.HasTile(celda)) return false;
+        }
+        return true;
     }
 
     IEnumerator HacerFade(float inicio, float fin, float duracion)
