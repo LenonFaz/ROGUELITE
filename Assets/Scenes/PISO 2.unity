@@ -24519,12 +24519,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6afac76b614fbf04ea24c89016f3e9c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TagEstilo
-  rotacionMax: 6
-  desfaseYMax: 6
-  temblor: 1
-  fps: 6
-  temblorRot: 4
-  temblorPos: 1.5
+  angulo1: -6
+  angulo2: 2
+  angulo3: 4
+  fps: 2
 --- !u!1001 &1274704964
 PrefabInstance:
   m_ObjectHideFlags: 0
