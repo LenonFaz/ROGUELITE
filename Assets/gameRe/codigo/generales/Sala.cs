@@ -14,6 +14,12 @@ public class Sala : MonoBehaviour
     [SerializeField] private List<Puerta> puertas = new List<Puerta>();
     [SerializeField] private bool reiniciarLuzAlEntrar = true;
 
+    [Header("Configuración de Cámara")]
+    [SerializeField] private bool limitarCamaraAEsteEspacio = true;
+    [SerializeField] private bool ajustarZoomCamara = true;
+    [SerializeField, Min(0f)] private float zoomPersonalizado;
+
+    private Collider2D colSala;
     private Transform jugador;
     private bool jugadorEnSala;
     private bool combateIniciado;
@@ -21,16 +27,16 @@ public class Sala : MonoBehaviour
 
     void Awake()
     {
+        colSala = GetComponent<PolygonCollider2D>();
+        if (colSala == null) TryGetComponent(out colSala);
+
         Collider2D[] colliders = GetComponents<Collider2D>();
         for (int i = 0; i < colliders.Length; i++)
         {
             colliders[i].isTrigger = true;
         }
 
-        if (enemigos.Count == 0)
-        {
-            GetComponentsInChildren(true, enemigos);
-        }
+        AutodetectarEnemigosEnPoligono();
 
         for (int i = 0; i < enemigos.Count; i++)
         {
@@ -39,6 +45,29 @@ public class Sala : MonoBehaviour
             {
                 e.AlMorir.AddListener(VerificarEnemigosRestantes);
                 ConfigurarIAEnemigo(e.gameObject, false);
+            }
+        }
+    }
+
+    private void AutodetectarEnemigosEnPoligono()
+    {
+        if (enemigos.Count == 0)
+        {
+            GetComponentsInChildren(true, enemigos);
+        }
+
+        if (enemigos.Count == 0 && colSala != null)
+        {
+            Vida[] todasLasVidas = FindObjectsByType<Vida>(FindObjectsSortMode.None);
+            for (int i = 0; i < todasLasVidas.Length; i++)
+            {
+                Vida v = todasLasVidas[i];
+                if (v == null || v.CompareTag("Player")) continue;
+
+                if (colSala.OverlapPoint(v.transform.position) && !enemigos.Contains(v))
+                {
+                    enemigos.Add(v);
+                }
             }
         }
     }
@@ -53,6 +82,11 @@ public class Sala : MonoBehaviour
         {
             GameObject p = GameObject.FindGameObjectWithTag("Player");
             if (p != null) jugador = p.transform;
+        }
+
+        if (jugador != null && colSala != null && colSala.OverlapPoint(jugador.position))
+        {
+            ActivarEntradaSala();
         }
     }
 
@@ -76,7 +110,18 @@ public class Sala : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag("Player") || salaLimpia || jugadorEnSala) return;
+        if (!other.CompareTag("Player")) return;
+        ActivarEntradaSala();
+    }
+
+    private void ActivarEntradaSala()
+    {
+        if (limitarCamaraAEsteEspacio && CamaraSeguimiento.Instancia != null && colSala != null)
+        {
+            CamaraSeguimiento.Instancia.EstablecerLimitesSala(colSala, ajustarZoomCamara, zoomPersonalizado);
+        }
+
+        if (salaLimpia || jugadorEnSala) return;
 
         jugadorEnSala = true;
 
@@ -137,6 +182,7 @@ public class Sala : MonoBehaviour
         if (GestorLuz.Instancia != null)
         {
             GestorLuz.Instancia.EstablecerPlegariaActiva(false);
+            GestorLuz.Instancia.ReiniciarLuz();
         }
 
         for (int i = 0; i < puertas.Count; i++)
