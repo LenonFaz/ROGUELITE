@@ -194,7 +194,7 @@ MonoBehaviour:
   velocidad: 3.4
   aceleracion: 18
   desaceleracion: 17
-  rangoDeteccion: 5.5
+  rangoDeteccion: 7
   rangoAtaque: 1.36
   tiempoQuietoAntes: 0.35
   velocidadImpulso: 7.5

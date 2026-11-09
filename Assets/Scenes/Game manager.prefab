@@ -46,9 +46,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GestorLuz
   luzMaxima: 100
-  aumentoPorSegundo: 1.5
-  aumentoPorDanio: 20
-  reduccionPorGolpe: 1
+  aumentoPorSegundo: 9.4
+  aumentoPorDanio: 22
+  reduccionPorGolpe: 7
   reduccionPorMuerte: 8
   barraLuzUI: {fileID: 0}
 --- !u!114 &8076459902015891098
