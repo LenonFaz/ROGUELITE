@@ -26,12 +26,23 @@ public class AtaqueJugador : MonoBehaviour
     private float timerAtaque;
     private Vector2 ultimaDireccion = Vector2.down;
     private Vector2 inputAtaque;
+    private bool bloqueadoExternamente;
 
     void Awake()
     {
         TryGetComponent(out jugador);
         if (!animJugador) animJugador = GetComponentInChildren<Animator>();
         if (!spriteJugador) spriteJugador = GetComponentInChildren<SpriteRenderer>();
+    }
+
+    public void EstablecerBloqueoExterno(bool bloqueado)
+    {
+        bloqueadoExternamente = bloqueado;
+        if (bloqueado)
+        {
+            EstaAtacando = false;
+            timerAtaque = 0f;
+        }
     }
 
     void OnLook(InputValue value)
@@ -41,6 +52,12 @@ public class AtaqueJugador : MonoBehaviour
 
     void Update()
     {
+        if (bloqueadoExternamente || (jugador != null && jugador.EstaEncadenado))
+        {
+            EstaAtacando = false;
+            return;
+        }
+
         timerCooldown -= Time.deltaTime;
 
         if (EstaAtacando)

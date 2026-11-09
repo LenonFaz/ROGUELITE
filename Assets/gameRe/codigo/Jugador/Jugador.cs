@@ -51,6 +51,10 @@ public class Jugador : MonoBehaviour
     private float velBase;
     private bool dasheando;
     private bool puedeDashear = true;
+    private bool encadenado;
+    private Sprite spriteForzadoEncadenado;
+    private AnimationClip clipForzadoEncadenado;
+
     private float tDash;
     private float tInvulnerableDash;
     private float tCdDash;
@@ -58,6 +62,7 @@ public class Jugador : MonoBehaviour
     private string animActual;
 
     public bool EstaDasheando => dasheando;
+    public bool EstaEncadenado => encadenado;
     public bool EsInvulnerablePorDash => invulnerableEnDash && tInvulnerableDash > 0f;
     public Vector2 UltimaDireccion => ultimaDir;
 
@@ -78,18 +83,12 @@ public class Jugador : MonoBehaviour
         velBase = vel;
     }
 
-    public void CambiarVelocidad(float nuevaVel)
-    {
-        vel = nuevaVel;
-    }
-
-    public void RestaurarVelocidad()
-    {
-        vel = velBase;
-    }
+    public void CambiarVelocidad(float nuevaVel) => vel = nuevaVel;
+    public void RestaurarVelocidad() => vel = velBase;
 
     public void EstablecerDireccion(Vector2 nuevaDir)
     {
+        if (encadenado) return;
         if (nuevaDir.sqrMagnitude > 0.01f)
         {
             ultimaDir = nuevaDir.normalized;
@@ -97,8 +96,50 @@ public class Jugador : MonoBehaviour
         }
     }
 
+    public void EstablecerEstadoEncadenado(bool activo, Sprite spriteEncadenado = null, AnimationClip clipEncadenado = null)
+    {
+        encadenado = activo;
+        spriteForzadoEncadenado = spriteEncadenado;
+        clipForzadoEncadenado = clipEncadenado;
+
+        if (activo)
+        {
+            dasheando = false;
+            tDash = 0f;
+            inputMov = Vector2.zero;
+            SetVelocity(Vector2.zero);
+
+            if (sprite != null) sprite.flipX = false;
+
+            if (clipForzadoEncadenado != null && anim != null)
+            {
+                anim.enabled = true;
+                anim.Play(clipForzadoEncadenado.name, -1, 0f);
+                animActual = clipForzadoEncadenado.name;
+            }
+            else if (spriteForzadoEncadenado != null && sprite != null)
+            {
+                if (anim != null) anim.enabled = false;
+                sprite.sprite = spriteForzadoEncadenado;
+            }
+        }
+        else
+        {
+            if (anim != null) anim.enabled = true;
+            animActual = string.Empty;
+            ActualizarAnimaciones();
+        }
+    }
+
+    public void ForzarDashInmediato()
+    {
+        if (encadenado) return;
+        IniciarDash();
+    }
+
     void OnMove(InputValue value)
     {
+        if (encadenado) return;
         inputMov = value.Get<Vector2>();
         if (inputMov.sqrMagnitude > 0.01f && !dasheando && (ataque == null || !ataque.EstaAtacando))
         {
@@ -108,9 +149,67 @@ public class Jugador : MonoBehaviour
 
     void OnDash(InputValue value)
     {
-        if (value.isPressed && puedeDashear && !dasheando)
+        if (value.isPressed)
+        {
+            IntentarDashInputSystem();
+        }
+    }
+
+    private void IntentarDashInputSystem()
+    {
+        if (encadenado || !puedeDashear || dasheando) return;
+        IniciarDash();
+    }
+
+    void Update()
+    {
+        if (encadenado)
+        {
+            if (clipForzadoEncadenado == null && spriteForzadoEncadenado != null && sprite != null)
+            {
+                sprite.sprite = spriteForzadoEncadenado;
+            }
+            return;
+        }
+
+        ChequearInputTecladoDirecto();
+
+        if (inputMov.sqrMagnitude > 0.01f && !dasheando && (ataque == null || !ataque.EstaAtacando))
+        {
+            ultimaDir = inputMov.normalized;
+        }
+
+        ActualizarTimers(Time.deltaTime);
+        ActualizarVolteoSprite();
+        ActualizarAnimaciones();
+    }
+
+    private void ChequearInputTecladoDirecto()
+    {
+        var kb = Keyboard.current;
+        var gp = Gamepad.current;
+
+        bool teclaDashPresionada = (kb != null && (kb.spaceKey.wasPressedThisFrame || kb.leftShiftKey.wasPressedThisFrame)) ||
+                                   (gp != null && (gp.rightShoulder.wasPressedThisFrame || gp.buttonEast.wasPressedThisFrame));
+
+        if (teclaDashPresionada && puedeDashear && !dasheando && !encadenado)
         {
             IniciarDash();
+        }
+
+        if (inputMov == Vector2.zero && kb != null && !dasheando && !encadenado)
+        {
+            Vector2 tecladoDir = Vector2.zero;
+            if (kb.wKey.isPressed) tecladoDir.y += 1f;
+            if (kb.sKey.isPressed) tecladoDir.y -= 1f;
+            if (kb.dKey.isPressed) tecladoDir.x += 1f;
+            if (kb.aKey.isPressed) tecladoDir.x -= 1f;
+
+            if (tecladoDir.sqrMagnitude > 0.01f)
+            {
+                inputMov = tecladoDir.normalized;
+                ultimaDir = inputMov;
+            }
         }
     }
 
@@ -139,20 +238,14 @@ public class Jugador : MonoBehaviour
         }
     }
 
-    void Update()
-    {
-        if (inputMov.sqrMagnitude > 0.01f && !dasheando && (ataque == null || !ataque.EstaAtacando))
-        {
-            ultimaDir = inputMov.normalized;
-        }
-
-        ActualizarTimers(Time.deltaTime);
-        ActualizarVolteoSprite();
-        ActualizarAnimaciones();
-    }
-
     void FixedUpdate()
     {
+        if (encadenado)
+        {
+            SetVelocity(Vector2.zero);
+            return;
+        }
+
         if (empuje != null && empuje.EstaEmpujado && !dasheando) return;
 
         if (dasheando)
@@ -166,13 +259,32 @@ public class Jugador : MonoBehaviour
                 }
             }
 
-            rb.linearVelocity = dirDash * velDash;
+            SetVelocity(dirDash * velDash);
             return;
         }
 
         Vector2 obj = inputMov * vel;
         float tasa = inputMov.sqrMagnitude > 0.01f ? acel : desacel;
-        rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, obj, tasa * Time.fixedDeltaTime);
+        Vector2 velActual = GetVelocity();
+        SetVelocity(Vector2.MoveTowards(velActual, obj, tasa * Time.fixedDeltaTime));
+    }
+
+    private void SetVelocity(Vector2 v)
+    {
+#if UNITY_6000_0_OR_NEWER
+        rb.linearVelocity = v;
+#else
+        rb.velocity = v;
+#endif
+    }
+
+    private Vector2 GetVelocity()
+    {
+#if UNITY_6000_0_OR_NEWER
+        return rb.linearVelocity;
+#else
+        return rb.velocity;
+#endif
     }
 
     private void ActualizarTimers(float dt)
@@ -237,7 +349,7 @@ public class Jugador : MonoBehaviour
 
     private void ActualizarVolteoSprite()
     {
-        if (!sprite) return;
+        if (!sprite || encadenado) return;
         if (ataque != null && ataque.EstaAtacando) return;
 
         ActualizarVolteoForzado();
@@ -245,7 +357,7 @@ public class Jugador : MonoBehaviour
 
     private void ActualizarVolteoForzado()
     {
-        if (!sprite) return;
+        if (!sprite || encadenado) return;
 
         Vector2 dirRef = dasheando ? dirDash : ultimaDir;
 
@@ -261,7 +373,7 @@ public class Jugador : MonoBehaviour
 
     private void ActualizarAnimaciones()
     {
-        if (!anim) return;
+        if (!anim || encadenado) return;
         if (ataque != null && ataque.EstaAtacando)
         {
             animActual = string.Empty;

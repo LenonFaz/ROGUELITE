@@ -187,7 +187,13 @@ MonoBehaviour:
   luzPrefab: {fileID: 0}
   colorLuz: {r: 0, g: 0.6627451, b: 0.9960785, a: 0.75}
   radioLuz: 0.5
-  intensidadLuz: 4
+  intensidadLuz: 5
+  activarParticulas: 1
+  cantidadParticulas: 8
+  duracionParticulas: 0.25
+  velocidadParticulas: 3.5
+  tamanoParticulas: 0.22
+  colorParticulas: {r: 0, g: 0.6627451, b: 0.9960785, a: 1}
 --- !u!96 &7502395400626538349
 TrailRenderer:
   serializedVersion: 4
