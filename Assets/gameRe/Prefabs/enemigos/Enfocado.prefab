@@ -348,11 +348,11 @@ MonoBehaviour:
   capaJugador:
     serializedVersion: 2
     m_Bits: 64
-  cdAtaque: 2.5
+  cdAtaque: 2.2
   rangoLaser: 19
-  fuerzaEmpujeLaser: 10
-  tiempoApuntar: 1
-  tiempoFijado: 0.35
+  fuerzaEmpujeLaser: 14
+  tiempoApuntar: 0.7
+  tiempoFijado: 0.2
   tiempoDisparo: 0.2
   colorMira: {r: 1, g: 1, b: 1, a: 0.4}
   grosorMira: 0.05

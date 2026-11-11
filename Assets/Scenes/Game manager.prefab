@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1106190305062071560}
   - component: {fileID: 5707338921694592372}
   - component: {fileID: 8076459902015891098}
+  - component: {fileID: 8417566162203724334}
   m_Layer: 0
   m_Name: Game manager
   m_TagString: Untagged
@@ -65,3 +66,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UIBarraLuz
   imagenRelleno: {fileID: 0}
   velocidadSuavizado: 5
+--- !u!114 &8417566162203724334
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6401167754704005368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b23cc9e37f732fa418b11df8a6719a1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuPausa
+  panelMenu: {fileID: 0}
