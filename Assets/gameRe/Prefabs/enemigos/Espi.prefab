@@ -249,10 +249,10 @@ MonoBehaviour:
   tiempoFadeOut: 0.2
   tiempoInvisible: 0.2
   tiempoFadeIn: 0.3
-  anim: {fileID: 0}
-  aQuieto: {fileID: 0}
-  aLanzarProyectiles: {fileID: 0}
-  aTeleport: {fileID: 0}
+  anim: {fileID: 3382309005417959267}
+  aQuieto: {fileID: 7400000, guid: e86691f4672c9b24e845b0b80430371c, type: 2}
+  aLanzarProyectiles: {fileID: 7400000, guid: cd3c72d7fe8cd7541bfdd161a46e7c2e, type: 2}
+  aTeleport: {fileID: 7400000, guid: 4a5d2900bc813744288a4b03ec9a24aa, type: 2}
 --- !u!95 &3382309005417959267
 Animator:
   serializedVersion: 7
