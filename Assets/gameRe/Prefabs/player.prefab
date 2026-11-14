@@ -449,7 +449,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 652ac04073b1b904190b94d929b8a1bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Vida
-  vidaMaxima: 5
+  vidaMaxima: 100
   esJugador: 1
   tiempoInvulnerabilidadDanio: 0.3
   retrasoDestruccionAlMorir: 0
@@ -474,9 +474,9 @@ MonoBehaviour:
   m_ComponentVersion: 2
   m_LightType: 3
   m_BlendStyleIndex: 0
-  m_FalloffIntensity: 0.597
-  m_Color: {r: 1, g: 0.6839622, b: 0.6839622, a: 1}
-  m_Intensity: 2.25
+  m_FalloffIntensity: 0.675
+  m_Color: {r: 1, g: 0.0141509175, b: 0.24106123, a: 1}
+  m_Intensity: 2.2
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
   m_ApplyToSortingLayers: fdb2403935e57b44db6acfd549b60e631b69a975518163d2
@@ -488,7 +488,7 @@ MonoBehaviour:
   m_NormalMapDistance: 3
   m_NormalMapQuality: 2
   m_UseNormalMap: 0
-  m_ShadowsEnabled: 1
+  m_ShadowsEnabled: 0
   m_ShadowIntensity: 0.75
   m_ShadowSoftness: 0.3
   m_ShadowSoftnessFalloffIntensity: 0.5
@@ -499,8 +499,8 @@ MonoBehaviour:
     m_Extent: {x: 0.9985302, y: 0.99853027, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
-  m_PointLightInnerRadius: 0
-  m_PointLightOuterRadius: 6
+  m_PointLightInnerRadius: 0.2864034
+  m_PointLightOuterRadius: 8.33
   m_ShapeLightParametricSides: 5
   m_ShapeLightParametricAngleOffset: 0
   m_ShapeLightParametricRadius: 1

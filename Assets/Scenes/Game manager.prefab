@@ -47,10 +47,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GestorLuz
   luzMaxima: 100
-  aumentoPorSegundo: 9.4
-  aumentoPorDanio: 22
-  reduccionPorGolpe: 7
-  reduccionPorMuerte: 8
+  aumentoPorSegundo: 9.8
+  aumentoPorDanio: 25
+  reduccionPorGolpe: 6
+  reduccionPorMuerte: 8.5
   barraLuzUI: {fileID: 0}
 --- !u!114 &8076459902015891098
 MonoBehaviour:
@@ -65,7 +65,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIBarraLuz
   imagenRelleno: {fileID: 0}
-  velocidadSuavizado: 5
+  velocidadSuavizado: 22
 --- !u!114 &8417566162203724334
 MonoBehaviour:
   m_ObjectHideFlags: 0
