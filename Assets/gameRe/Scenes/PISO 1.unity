@@ -124417,7 +124417,7 @@ MonoBehaviour:
   npcTransform: {fileID: 480034467}
   offsetEntradaArriba: {x: 0, y: 6.2}
   offsetParadaFrenteJugador: {x: 0, y: 2}
-  velocidadMovimientoNPC: 2
+  velocidadMovimientoNPC: 2.3
   animNPC: {fileID: 0}
   clipNPCMover: {fileID: 0}
   clipNPCHablar: {fileID: 0}
@@ -124425,24 +124425,31 @@ MonoBehaviour:
   imagenRetratoUI: {fileID: 626201361}
   textoNombreUI: {fileID: 846681966}
   textoContenidoUI: {fileID: 764920894}
+  iconoContinuarEspacioUI: {fileID: 0}
+  mostrarIconoSoloAlTerminarLinea: 0
   tiempoPorLetra: 0.03
   lineasDialogo:
   - nombreHablante: Inqusidora
     ilustracionHablante: {fileID: 1214239739987324333, guid: a253445570d40ac43a7b5e9b54783dcc, type: 3}
     voltearIlustracionX: 1
-    texto: ...
-  - nombreHablante: Mc
-    ilustracionHablante: {fileID: 21300000, guid: ca3e987213ce0f04ab63c1c657767b43, type: 3}
-    voltearIlustracionX: 0
-    texto: ...
+    offsetIlustracion: {x: 0, y: 0}
+    texto: 'Ha pasado un tiempo desde mi ultima visita verdad? '
   - nombreHablante: Inquisidora
     ilustracionHablante: {fileID: -4085576754481220706, guid: a74f9091e0bac674ebfbc9e99ddef4d8, type: 3}
     voltearIlustracionX: 1
-    texto: ...
+    offsetIlustracion: {x: 0, y: 0}
+    texto: Oh vamos no me mires asi, sera la ultima vez que nos veamos de todas formas,
+      ya no te queda casi nada de energia para quitarte..
+  - nombreHablante: Mc
+    ilustracionHablante: {fileID: 21300000, guid: ca3e987213ce0f04ab63c1c657767b43, type: 3}
+    voltearIlustracionX: 0
+    offsetIlustracion: {x: 0, y: -40}
+    texto: 'Te crees que me importa, '
   - nombreHablante: Mc
     ilustracionHablante: {fileID: 21300000, guid: 0d165a0a776f8d440bdf3147db64a524, type: 3}
     voltearIlustracionX: 0
-    texto: ...
+    offsetIlustracion: {x: 0, y: -40}
+    texto: ...asdasdadadad
   objetoAvisoMover: {fileID: 1912066499}
   objetoAvisoAtacar: {fileID: 1120392575}
   objetoAvisoDash: {fileID: 1518001911}

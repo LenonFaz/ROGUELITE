@@ -31,6 +31,7 @@ public class EventoCadenas : MonoBehaviour
         public string nombreHablante;
         public Sprite ilustracionHablante;
         public bool voltearIlustracionX;
+        public Vector2 offsetIlustracion;
         [TextArea(2, 4)] public string texto;
     }
 
@@ -49,6 +50,8 @@ public class EventoCadenas : MonoBehaviour
     [SerializeField] private Image imagenRetratoUI;
     [SerializeField] private TMP_Text textoNombreUI;
     [SerializeField] private TMP_Text textoContenidoUI;
+    [SerializeField] private GameObject iconoContinuarEspacioUI;
+    [SerializeField] private bool mostrarIconoSoloAlTerminarLinea = false;
     [SerializeField, Min(0.005f)] private float tiempoPorLetra = 0.03f;
     [SerializeField] private LineaDialogo[] lineasDialogo = new LineaDialogo[]
     {
@@ -130,6 +133,9 @@ public class EventoCadenas : MonoBehaviour
     private InputAction accionAtacar;
     private InputAction accionDash;
 
+    private Vector2 posBaseRetratoUI;
+    private bool posBaseRetratoGuardada;
+
     private Vector3 posicionAnclada;
     private Vector2Int ultimaDirMovLeida;
     private Vector2Int ultimaDirAtkLeida;
@@ -158,8 +164,15 @@ public class EventoCadenas : MonoBehaviour
 
         AsegurarMaterial();
 
+        if (imagenRetratoUI != null)
+        {
+            posBaseRetratoUI = imagenRetratoUI.rectTransform.anchoredPosition;
+            posBaseRetratoGuardada = true;
+            imagenRetratoUI.gameObject.SetActive(false);
+        }
+
+        if (iconoContinuarEspacioUI != null) iconoContinuarEspacioUI.SetActive(false);
         if (panelDialogo != null) panelDialogo.SetActive(false);
-        if (imagenRetratoUI != null) imagenRetratoUI.gameObject.SetActive(false);
         if (npcTransform != null) npcTransform.gameObject.SetActive(false);
 
         ConfigurarAlphaObjeto(objetoAvisoMover, 0f, false);
@@ -360,6 +373,8 @@ public class EventoCadenas : MonoBehaviour
 
     private IEnumerator RutinaCinematicaYDialogo()
     {
+        if (playerInput != null) playerInput.DeactivateInput();
+
         Vector3 posInicioNPC = posicionAnclada + (Vector3)offsetEntradaArriba;
         Vector3 posParadaNPC = posicionAnclada + (Vector3)offsetParadaFrenteJugador;
 
@@ -390,12 +405,24 @@ public class EventoCadenas : MonoBehaviour
                 if (textoNombreUI != null) textoNombreUI.text = actual.nombreHablante;
                 if (textoContenidoUI != null) textoContenidoUI.text = string.Empty;
 
+                if (iconoContinuarEspacioUI != null)
+                {
+                    iconoContinuarEspacioUI.SetActive(!mostrarIconoSoloAlTerminarLinea);
+                }
+
                 if (imagenRetratoUI != null)
                 {
+                    if (!posBaseRetratoGuardada)
+                    {
+                        posBaseRetratoUI = imagenRetratoUI.rectTransform.anchoredPosition;
+                        posBaseRetratoGuardada = true;
+                    }
+
                     if (actual.ilustracionHablante != null)
                     {
                         imagenRetratoUI.sprite = actual.ilustracionHablante;
                         imagenRetratoUI.preserveAspect = true;
+                        imagenRetratoUI.rectTransform.anchoredPosition = posBaseRetratoUI + actual.offsetIlustracion;
 
                         Vector3 escala = imagenRetratoUI.rectTransform.localScale;
                         escala.x = Mathf.Abs(escala.x) * (actual.voltearIlustracionX ? -1f : 1f);
@@ -437,6 +464,11 @@ public class EventoCadenas : MonoBehaviour
                     }
                 }
 
+                if (iconoContinuarEspacioUI != null)
+                {
+                    iconoContinuarEspacioUI.SetActive(true);
+                }
+
                 yield return null;
                 while (!PresionoAvanzarDialogo())
                 {
@@ -444,7 +476,12 @@ public class EventoCadenas : MonoBehaviour
                 }
             }
 
-            if (imagenRetratoUI != null) imagenRetratoUI.gameObject.SetActive(false);
+            if (iconoContinuarEspacioUI != null) iconoContinuarEspacioUI.SetActive(false);
+            if (imagenRetratoUI != null)
+            {
+                imagenRetratoUI.rectTransform.anchoredPosition = posBaseRetratoUI;
+                imagenRetratoUI.gameObject.SetActive(false);
+            }
             panelDialogo.SetActive(false);
         }
 
@@ -460,6 +497,8 @@ public class EventoCadenas : MonoBehaviour
 
             npcTransform.gameObject.SetActive(false);
         }
+
+        if (playerInput != null) playerInput.ActivateInput();
     }
 
     private void ReproducirAnimNPC(AnimationClip clip)
@@ -473,24 +512,7 @@ public class EventoCadenas : MonoBehaviour
     private bool PresionoAvanzarDialogo()
     {
         var kb = Keyboard.current;
-        if (kb != null && (kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame || kb.eKey.wasPressedThisFrame || kb.zKey.wasPressedThisFrame))
-        {
-            return true;
-        }
-
-        var mouse = Mouse.current;
-        if (mouse != null && mouse.leftButton.wasPressedThisFrame)
-        {
-            return true;
-        }
-
-        var gp = Gamepad.current;
-        if (gp != null && (gp.buttonSouth.wasPressedThisFrame || gp.buttonWest.wasPressedThisFrame))
-        {
-            return true;
-        }
-
-        return false;
+        return kb != null && kb.spaceKey.wasPressedThisFrame;
     }
 
     private void IniciarFaseQTE()
