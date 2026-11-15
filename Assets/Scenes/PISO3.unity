@@ -4609,42 +4609,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Canvas
       objectReference: {fileID: 0}
-    - target: {fileID: 6073072131168984638, guid: 061d5ee5889301e4699e01cc653b44a8, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 6073072131168984638, guid: 061d5ee5889301e4699e01cc653b44a8, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6073072131168984638, guid: 061d5ee5889301e4699e01cc653b44a8, type: 3}
-      propertyPath: m_AnchorMin.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 6073072131168984638, guid: 061d5ee5889301e4699e01cc653b44a8, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6073072131168984638, guid: 061d5ee5889301e4699e01cc653b44a8, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 5.8178735
-      objectReference: {fileID: 0}
-    - target: {fileID: 6073072131168984638, guid: 061d5ee5889301e4699e01cc653b44a8, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.54945
-      objectReference: {fileID: 0}
-    - target: {fileID: 6073072131168984638, guid: 061d5ee5889301e4699e01cc653b44a8, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 1.221
-      objectReference: {fileID: 0}
-    - target: {fileID: 6073072131168984638, guid: 061d5ee5889301e4699e01cc653b44a8, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6073072131168984638, guid: 061d5ee5889301e4699e01cc653b44a8, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -83
-      objectReference: {fileID: 0}
     - target: {fileID: 6610643805395074755, guid: 061d5ee5889301e4699e01cc653b44a8, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -4811,6 +4775,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+--- !u!224 &851204968 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 8957941605564836148, guid: 061d5ee5889301e4699e01cc653b44a8, type: 3}
+  m_PrefabInstance: {fileID: 697404091}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &870478298 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6663044863503563684, guid: 8c0c76fb77f57be45ab8b753acf9d464, type: 3}
@@ -5453,9 +5422,45 @@ PrefabInstance:
       value: Game manager
       objectReference: {fileID: 0}
     - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
+      propertyPath: rellenoBarra
+      value: 
+      objectReference: {fileID: 772192199}
+    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
+      propertyPath: colorNormal.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
+      propertyPath: colorNormal.g
+      value: 0.6509804
+      objectReference: {fileID: 0}
+    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
+      propertyPath: colorNormal.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
       propertyPath: imagenRelleno
       value: 
       objectReference: {fileID: 772192199}
+    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
+      propertyPath: colorPeligro.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
+      propertyPath: colorPeligro.g
+      value: 0.9489641
+      objectReference: {fileID: 0}
+    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
+      propertyPath: colorPeligro.r
+      value: 0.8537736
+      objectReference: {fileID: 0}
+    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
+      propertyPath: contenedorSacudida
+      value: 
+      objectReference: {fileID: 851204968}
+    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
+      propertyPath: umbralInicioTemblor
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 8417566162203724334, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
       propertyPath: panelMenu
       value: 
