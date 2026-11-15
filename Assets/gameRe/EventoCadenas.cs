@@ -30,6 +30,7 @@ public class EventoCadenas : MonoBehaviour
     {
         public string nombreHablante;
         public Sprite ilustracionHablante;
+        public bool voltearIlustracionX;
         [TextArea(2, 4)] public string texto;
     }
 
@@ -158,6 +159,7 @@ public class EventoCadenas : MonoBehaviour
         AsegurarMaterial();
 
         if (panelDialogo != null) panelDialogo.SetActive(false);
+        if (imagenRetratoUI != null) imagenRetratoUI.gameObject.SetActive(false);
         if (npcTransform != null) npcTransform.gameObject.SetActive(false);
 
         ConfigurarAlphaObjeto(objetoAvisoMover, 0f, false);
@@ -393,11 +395,18 @@ public class EventoCadenas : MonoBehaviour
                     if (actual.ilustracionHablante != null)
                     {
                         imagenRetratoUI.sprite = actual.ilustracionHablante;
+                        imagenRetratoUI.preserveAspect = true;
+
+                        Vector3 escala = imagenRetratoUI.rectTransform.localScale;
+                        escala.x = Mathf.Abs(escala.x) * (actual.voltearIlustracionX ? -1f : 1f);
+                        imagenRetratoUI.rectTransform.localScale = escala;
+
                         imagenRetratoUI.enabled = true;
+                        imagenRetratoUI.gameObject.SetActive(true);
                     }
                     else
                     {
-                        imagenRetratoUI.enabled = false;
+                        imagenRetratoUI.gameObject.SetActive(false);
                     }
                 }
 
@@ -435,6 +444,7 @@ public class EventoCadenas : MonoBehaviour
                 }
             }
 
+            if (imagenRetratoUI != null) imagenRetratoUI.gameObject.SetActive(false);
             panelDialogo.SetActive(false);
         }
 
