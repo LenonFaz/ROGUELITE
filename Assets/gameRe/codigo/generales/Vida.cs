@@ -31,7 +31,11 @@ public class Vida : MonoBehaviour
         EsInvulnerable = false;
         TryGetComponent(out impactoVisual);
 
-        if (!esJugador)
+        if (esJugador)
+        {
+            conservarObjetoAlMorir = true;
+        }
+        else
         {
             if (!TryGetComponent(out ShadowCaster2D sombra))
             {
@@ -138,9 +142,6 @@ public class Vida : MonoBehaviour
         {
             Destroy(gameObject);
         }
-        Debug.Log("Jugador murió");
-        Time.timeScale = 1f;
-        FadeManager.Instance.CargarEscena("GameOver");
     }
 
     void OnDisable()
