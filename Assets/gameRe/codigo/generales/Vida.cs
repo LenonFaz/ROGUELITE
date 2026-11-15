@@ -10,6 +10,7 @@ public class Vida : MonoBehaviour
     [SerializeField] private bool esJugador;
     [SerializeField, Min(0f)] private float tiempoInvulnerabilidadDanio = 0.6f;
     [SerializeField, Min(0f)] private float retrasoDestruccionAlMorir;
+    [SerializeField] private bool conservarObjetoAlMorir;
 
     [Header("Eventos")]
     public UnityEvent AlRecibirDanio;
@@ -44,6 +45,11 @@ public class Vida : MonoBehaviour
     public void EstablecerRetrasoDestruccion(float segundos)
     {
         retrasoDestruccionAlMorir = Mathf.Max(0f, segundos);
+    }
+
+    public void EstablecerConservarAlMorir(bool conservar)
+    {
+        conservarObjetoAlMorir = conservar;
     }
 
     public void RecibirDanio(int cantidad)
@@ -113,6 +119,13 @@ public class Vida : MonoBehaviour
         if (!esJugador && GestorLuz.Instancia != null)
         {
             GestorLuz.Instancia.RegistrarMuerteDeEnemigo();
+        }
+
+        if (conservarObjetoAlMorir)
+        {
+            if (TryGetComponent(out Collider2D col)) col.enabled = false;
+            if (TryGetComponent(out Rigidbody2D rb)) rb.linearVelocity = Vector2.zero;
+            return;
         }
 
         if (retrasoDestruccionAlMorir > 0f)

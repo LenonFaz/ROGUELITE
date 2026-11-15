@@ -1,12 +1,26 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.Tilemaps;
+using UnityEngine.UI;
+using TMPro;
+using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(SpriteRenderer))]
 [RequireComponent(typeof(Vida))]
 public class LaInquisidora : MonoBehaviour, IRangoDeteccion
 {
+    [Serializable]
+    public class LineaDialogoJefe
+    {
+        public string nombreHablante;
+        public Sprite ilustracionHablante;
+        [TextArea(2, 4)] public string texto;
+    }
+
     [Header("Referencias Principales")]
     [SerializeField] private Transform player;
     [SerializeField] private Bullet prefabBullet;
@@ -14,22 +28,23 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
     [SerializeField] private LayerMask capaJugador;
     [SerializeField] private Sala salaJefe;
     [SerializeField] private Collider2D limitesArena;
-    [SerializeField, Min(0.1f)] private float tiempoBrilloAntesAtaque = 0.4f;
+    [SerializeField, Min(8)] private int pixelesPorUnidad = 32;
+    [SerializeField, Min(0.1f)] private float tiempoAvisoAntesAtaque = 0.45f;
 
-    [Header("Movimiento y Dash (Sin Invulnerabilidad)")]
+    [Header("Movimiento y Reposicionamiento")]
     [SerializeField, Min(0f)] private float velocidadBase = 3.2f;
     [SerializeField, Min(0f)] private float aceleracion = 20f;
     [SerializeField, Min(0f)] private float desaceleracion = 25f;
     [SerializeField, Min(0f)] private float rangoDeteccion = 16f;
     [SerializeField, Min(0f)] private float velocidadDash = 14f;
     [SerializeField, Min(0f)] private float duracionDash = 0.22f;
-    [SerializeField, Min(0f)] private float cdDash = 3f;
-    [SerializeField, Min(0f)] private float pausaEntreAtaques = 1.1f;
+    [SerializeField, Min(0f)] private float cdDash = 3.2f;
+    [SerializeField, Min(0f)] private float pausaEntreAtaques = 1.05f;
 
-    [Header("Fase 1: 1. Melee Grande (Hitbox)")]
-    [SerializeField, Min(0f)] private float distAcercamientoMelee = 2f;
-    [SerializeField, Min(0f)] private float tiempoQuietoAntesMelee = 0.45f;
-    [SerializeField] private Vector2 tamHitboxMeleeGrande = new Vector2(3.2f, 2.8f);
+    [Header("Fase 1: 1. Melee Grande (Con Indicador Pixel)")]
+    [SerializeField, Min(0f)] private float distAcercamientoMelee = 2.2f;
+    [SerializeField, Min(0.1f)] private float tiempoQuietoAntesMelee = 0.5f;
+    [SerializeField] private Vector2 tamHitboxMeleeGrande = new Vector2(3.2f, 2.6f);
     [SerializeField, Min(0f)] private float offsetMeleeGrande = 1.6f;
     [SerializeField, Min(1)] private int danioMeleeGrande = 2;
     [SerializeField, Min(0f)] private float empujeMeleeGrande = 10f;
@@ -40,52 +55,65 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
     [SerializeField, Min(0.05f)] private float intervaloOleadasZigZag = 0.45f;
     [SerializeField, Min(0f)] private float velBalaZigZag = 6.5f;
     [SerializeField, Min(0f)] private float frecuenciaZigZag = 10f;
-    [SerializeField, Min(0f)] private float amplitudZigZag = 4.5f;
+    [SerializeField, Min(0f)] private float amplitudZigZag = 4.2f;
 
-    [Header("Fase 1: 3. Metralleta Imprecisa")]
+    [Header("Fase 1: 3. Metralleta en Barrido")]
     [SerializeField, Min(1)] private int cantidadBalasMetralleta = 28;
-    [SerializeField, Min(0.01f)] private float cadenciaMetralleta = 0.06f;
-    [SerializeField, Min(0f)] private float anguloImprecision = 22f;
+    [SerializeField, Min(0.01f)] private float cadenciaMetralleta = 0.055f;
+    [SerializeField, Min(0f)] private float arcoBarridoGrados = 32f;
+    [SerializeField, Min(0f)] private float anguloImprecision = 6f;
     [SerializeField, Min(0f)] private float velBalaMetralleta = 10.5f;
 
-    [Header("Fase 1: 4. Super Ataque Melee Largo (Hitbox)")]
+    [Header("Fase 1: 4. Super Ataque Melee Largo (Carril Pixel)")]
     [SerializeField, Min(0f)] private float velMovimientoLento = 0.85f;
-    [SerializeField, Min(0f)] private float tiempoCargaSuperMelee = 1.1f;
-    [SerializeField] private Vector2 tamHitboxSuperMelee = new Vector2(7.5f, 1.1f);
-    [SerializeField, Min(0f)] private float offsetSuperMelee = 3.75f;
+    [SerializeField, Min(0.2f)] private float tiempoCargaSuperMelee = 1.15f;
+    [SerializeField] private Vector2 tamHitboxSuperMelee = new Vector2(8f, 1.25f);
+    [SerializeField, Min(0f)] private float offsetSuperMelee = 4f;
     [SerializeField, Min(1)] private int danioSuperMelee = 2;
     [SerializeField, Min(0f)] private float empujeSuperMelee = 13f;
-    [SerializeField] private Color colorAvisoMeleeLargo = new Color(1f, 0.5f, 0f, 0.45f);
-    [SerializeField] private Color colorImpactoMeleeLargo = new Color(1f, 0.9f, 0.2f, 1f);
+    [SerializeField] private Color colorAvisoPixel = new Color(1f, 0.2f, 0.25f, 0.85f);
+    [SerializeField] private Color colorImpactoPixel = new Color(1f, 0.95f, 0.8f, 1f);
 
-    [Header("Fase 2: Transición y Columnas")]
+    [Header("Fase 2: Transición y Columnas (Tilemap)")]
+    [SerializeField] private Tilemap tilemapColumnas;
+    [SerializeField] private bool desactivarTilemapCompleto = true;
     [SerializeField] private GameObject[] columnasSala;
     [SerializeField] private GameObject prefabEfectoDestruccionColumna;
 
-    [Header("Fase 2: 1. Invocación e Invulnerabilidad")]
-    [SerializeField, Min(0f)] private float duracionInvulnerableInvocacion = 5f;
-    [SerializeField, Min(1)] private int cantidadEnemigosInvocar = 5;
-    [SerializeField] private GameObject[] prefabsEnemigosRandom;
-    [SerializeField] private Transform[] puntosSpawnEnemigos;
-    [SerializeField] private Color colorInvulnerable = new Color(0.6f, 0.85f, 1f, 0.75f);
+    [Header("Fase 2: 1. Invocación de 3 Ghouls (Izq, Der, Abajo)")]
+    [SerializeField] private GameObject prefabGhoul;
+    [SerializeField, Min(0.5f)] private float distanciaSpawnGhoul = 2.2f;
+    [SerializeField, Min(0.5f)] private float duracionInvulnerableInvocacion = 2.6f;
+    [SerializeField] private Color colorInvulnerable = new Color(0.6f, 0.85f, 1f, 0.8f);
 
-    [Header("Fase 2: 2. Patrones Touhou (2 Tipos)")]
+    [Header("Fase 2: 2. Patrones Touhou")]
     [SerializeField, Min(1)] private int oleadasTouhou = 16;
     [SerializeField, Min(3)] private int brazosTouhou = 6;
     [SerializeField, Min(0.02f)] private float intervaloTouhou = 0.12f;
     [SerializeField, Min(0f)] private float velBalaTouhou = 6f;
 
-    [Header("Fase 2: 3. Cuadrícula de Láseres Estáticos")]
+    [Header("Fase 2: 3. Cuadrícula de Láseres Estáticos Pixel Art")]
     [SerializeField, Min(1)] private int lineasVerticales = 4;
     [SerializeField, Min(1)] private int lineasHorizontales = 3;
-    [SerializeField, Min(0f)] private float tamanoArenaFallback = 12f;
-    [SerializeField, Min(0.1f)] private float tiempoAvisoCuadricula = 1.1f;
+    [SerializeField, Min(2f)] private float tamanoArenaFallback = 12f;
+    [SerializeField, Min(0.1f)] private float tiempoAvisoCuadricula = 1.15f;
     [SerializeField, Min(0.1f)] private float duracionCuadricula = 0.65f;
-    [SerializeField, Min(0.02f)] private float grosorAvisoLaser = 0.08f;
-    [SerializeField, Min(0.1f)] private float grosorDisparoLaser = 0.55f;
-    [SerializeField] private Color colorAvisoLaser = new Color(1f, 0f, 0.2f, 0.45f);
-    [SerializeField] private Color colorDisparoLaser = new Color(1f, 0.1f, 0.3f, 1f);
+    [SerializeField, Min(1)] private int grosorLaserCuadriculaPx = 14;
     [SerializeField, Min(1)] private int danioLaserCuadricula = 1;
+
+    [Header("Derrota, Diálogo Final y Portal")]
+    [SerializeField, Min(0.2f)] private float esperaAntesDeDialogoFinal = 1.4f;
+    [SerializeField] private GameObject panelDialogoFinal;
+    [SerializeField] private Image imagenRetratoUI;
+    [SerializeField] private TMP_Text textoNombreUI;
+    [SerializeField] private TMP_Text textoContenidoUI;
+    [SerializeField, Min(0.005f)] private float tiempoPorLetra = 0.03f;
+    [SerializeField] private LineaDialogoJefe[] dialogosDerrota = new LineaDialogoJefe[]
+    {
+        new LineaDialogoJefe { nombreHablante = "La Inquisidora", texto = "..." },
+        new LineaDialogoJefe { nombreHablante = "Protagonista", texto = "..." }
+    };
+    [SerializeField] private PortalSalida portalSalida;
 
     [Header("Animaciones")]
     [SerializeField] private Animator anim;
@@ -110,7 +138,6 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
     private Empuje empuje;
     private Aturdido aturdido;
     private IndicadorAtaque indicador;
-    private LineRenderer lineaGuia;
 
     private bool barraJefeActivada;
     private bool enFase2;
@@ -128,6 +155,16 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
 
     private readonly List<Vida> enemigosInvocados = new List<Vida>();
 
+    private GameObject objLienzo;
+    private SpriteRenderer srLienzo;
+    private Texture2D texLienzo;
+    private Color32[] bufferLimpio;
+    private Color32[] bufferTrabajo;
+    private int anchoTex;
+    private int altoTex;
+    private Vector2 esquinaMinLienzo;
+    private static Material materialPixelCompartido;
+
     void Awake()
     {
         TryGetComponent(out rb);
@@ -144,7 +181,9 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
 
         colorBase = sprite.color;
-        CrearLineaGuia();
+        vida.EstablecerConservarAlMorir(true);
+
+        if (panelDialogoFinal != null) panelDialogoFinal.SetActive(false);
     }
 
     void Start()
@@ -164,10 +203,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
             Physics2D.IgnoreCollision(miCol, colP, true);
         }
 
-        if (aVencida != null)
-        {
-            vida.EstablecerRetrasoDestruccion(aVencida.length);
-        }
+        InicializarLienzoPixelArena();
 
         vida.AlRecibirDanio.AddListener(VerificarCambioDeFase);
         vida.AlMorir.AddListener(EjecutarDerrota);
@@ -175,17 +211,56 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         timerPausaAtaque = 1f;
     }
 
-    private void CrearLineaGuia()
+    private void InicializarLienzoPixelArena()
     {
-        GameObject objGuia = new GameObject("GuiaSuperMelee");
-        objGuia.transform.SetParent(transform, false);
-        lineaGuia = objGuia.AddComponent<LineRenderer>();
-        lineaGuia.positionCount = 2;
-        lineaGuia.useWorldSpace = true;
-        Shader s = Shader.Find("Sprites/Default") ?? Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
-        if (s != null) lineaGuia.material = new Material(s);
-        lineaGuia.sortingOrder = sprite.sortingOrder + 1;
-        lineaGuia.enabled = false;
+        if (materialPixelCompartido == null)
+        {
+            Shader s = Shader.Find("Sprites/Default") ?? Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+            if (s != null) materialPixelCompartido = new Material(s);
+        }
+
+        Bounds b = ObtenerBoundsArena();
+        int ppu = Mathf.Max(8, pixelesPorUnidad);
+        int wUnidades = Mathf.CeilToInt(b.size.x) + 6;
+        int hUnidades = Mathf.CeilToInt(b.size.y) + 6;
+
+        anchoTex = wUnidades * ppu;
+        altoTex = hUnidades * ppu;
+
+        float cx = Mathf.Round(b.center.x * ppu) / ppu;
+        float cy = Mathf.Round(b.center.y * ppu) / ppu;
+        esquinaMinLienzo = new Vector2(cx - wUnidades * 0.5f, cy - hUnidades * 0.5f);
+
+        if (texLienzo != null) Destroy(texLienzo);
+        texLienzo = new Texture2D(anchoTex, altoTex, TextureFormat.RGBA32, false);
+        texLienzo.filterMode = FilterMode.Point;
+        texLienzo.wrapMode = TextureWrapMode.Clamp;
+
+        bufferLimpio = new Color32[anchoTex * altoTex];
+        bufferTrabajo = new Color32[anchoTex * altoTex];
+        texLienzo.SetPixels32(bufferLimpio);
+        texLienzo.Apply(false);
+
+        if (objLienzo == null)
+        {
+            objLienzo = new GameObject("LienzoPixelInquisidora");
+            srLienzo = objLienzo.AddComponent<SpriteRenderer>();
+            if (materialPixelCompartido != null) srLienzo.sharedMaterial = materialPixelCompartido;
+        }
+
+        objLienzo.transform.position = new Vector3(cx, cy, 0f);
+        if (sprite != null)
+        {
+            srLienzo.sortingLayerID = sprite.sortingLayerID;
+            srLienzo.sortingOrder = sprite.sortingOrder - 1;
+        }
+        srLienzo.sprite = Sprite.Create(texLienzo, new Rect(0, 0, anchoTex, altoTex), new Vector2(0.5f, 0.5f), ppu);
+        srLienzo.enabled = false;
+    }
+
+    private void LimpiarYApagarLienzo()
+    {
+        if (srLienzo != null) srLienzo.enabled = false;
     }
 
     void Update()
@@ -265,14 +340,14 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
 
     private void VerificarCambioDeFase()
     {
-        if (enFase2 || vida.VidaActual <= 0) return;
+        if (enFase2 || vencida || vida.VidaActual <= 0) return;
 
         if (vida.VidaActual <= vida.VidaMaxima * 0.5f)
         {
             enFase2 = true;
             StopAllCoroutines();
             indicador.CancelarAviso();
-            lineaGuia.enabled = false;
+            LimpiarYApagarLienzo();
             dasheando = false;
             sprite.color = colorBase;
             StartCoroutine(RutinaTransicionFase2());
@@ -288,15 +363,21 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         }
         else
         {
+            LimpiarEnemigosMuertos();
             int atk = ObtenerIndiceAleatorio(4, ref ultimoAtaqueF2);
+
+            if (atk == 0 && enemigosInvocados.Count >= 3)
+            {
+                atk = Random.Range(1, 4);
+            }
+
             switch (atk)
             {
                 case 0:
-                    StartCoroutine(RutinaInvocarEnemigos());
+                    StartCoroutine(RutinaInvocarTresGhouls());
                     break;
                 case 1:
-                    int atkF1 = Random.Range(0, 4);
-                    EjecutarAtaqueFase1(atkF1);
+                    EjecutarAtaqueFase1(Random.Range(0, 4));
                     break;
                 case 2:
                     StartCoroutine(RutinaPatronesTouhou());
@@ -329,7 +410,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
 
     private int ObtenerIndiceAleatorio(int total, ref int ultimo)
     {
-        int nuevo = Random.Range(0, total);
+        int nuevo = UnityEngine.Random.Range(0, total);
         if (nuevo == ultimo) nuevo = (nuevo + 1) % total;
         ultimo = nuevo;
         return nuevo;
@@ -342,14 +423,14 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         timerCdDash = cdDash;
 
         Vector2 haciaJugador = ((Vector2)player.position - (Vector2)transform.position).normalized;
-        Vector2 perpendicular = new Vector2(-haciaJugador.y, haciaJugador.x) * (Random.value > 0.5f ? 1f : -1f);
-        dirDash = (haciaJugador * 0.65f + perpendicular * 0.35f).normalized;
+        Vector2 perpendicular = new Vector2(-haciaJugador.y, haciaJugador.x) * (UnityEngine.Random.value > 0.5f ? 1f : -1f);
+        dirDash = (haciaJugador * 0.6f + perpendicular * 0.4f).normalized;
 
         if (Mathf.Abs(dirDash.x) > 0.1f) sprite.flipX = dirDash.x < 0f;
         ReproducirAnim(aCaminarAbajo);
 
         float t = duracionDash;
-        while (t > 0f)
+        while (t > 0f && !vencida)
         {
             t -= Time.deltaTime;
             yield return null;
@@ -365,10 +446,10 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         ejecutandoAccion = true;
         ReproducirAnim(aCaminarAbajo);
 
-        float tiempoMaxAcercamiento = 2.5f;
+        float tiempoMaxAcercamiento = 2.2f;
         while (tiempoMaxAcercamiento > 0f && player != null && Vector2.Distance(transform.position, player.position) > distAcercamientoMelee)
         {
-            if (Bloqueado()) { FinalizarAccion(); yield break; }
+            if (Bloqueado() || vencida) { FinalizarAccion(); yield break; }
             tiempoMaxAcercamiento -= Time.deltaTime;
             Vector2 dir = ((Vector2)player.position - (Vector2)transform.position).normalized;
             velObjetivo = dir * (velocidadBase * 1.35f);
@@ -381,18 +462,41 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
 
         Vector2 dirAtaque = player != null ? ((Vector2)player.position - (Vector2)transform.position).normalized : Vector2.down;
         if (dirAtaque == Vector2.zero) dirAtaque = Vector2.down;
+        float angulo = Mathf.Atan2(dirAtaque.y, dirAtaque.x) * Mathf.Rad2Deg;
 
         indicador.MostrarAviso(tiempoQuietoAntesMelee);
-        yield return new WaitForSeconds(tiempoQuietoAntesMelee);
-        if (Bloqueado()) { FinalizarAccion(); yield break; }
+        srLienzo.enabled = true;
+
+        float t = 0f;
+        while (t < tiempoQuietoAntesMelee)
+        {
+            if (Bloqueado() || vencida) { LimpiarYApagarLienzo(); FinalizarAccion(); yield break; }
+            t += Time.deltaTime;
+
+            Array.Copy(bufferLimpio, bufferTrabajo, bufferLimpio.Length);
+            if (Mathf.Sin(t * 28f) >= -0.2f)
+            {
+                Vector2 centroAviso = (Vector2)transform.position + dirAtaque * offsetMeleeGrande;
+                DibujarCajaRotadaPixel(centroAviso, tamHitboxMeleeGrande, angulo, colorAvisoPixel, false);
+            }
+            AplicarLienzo();
+            yield return null;
+        }
 
         ReproducirAnim(aLanzarMeleeGrande);
+        rb.linearVelocity = dirAtaque * 5f;
+
         Vector2 centro = (Vector2)transform.position + dirAtaque * offsetMeleeGrande;
-        float angulo = Mathf.Atan2(dirAtaque.y, dirAtaque.x) * Mathf.Rad2Deg;
+        Array.Copy(bufferLimpio, bufferTrabajo, bufferLimpio.Length);
+        DibujarCajaRotadaPixel(centro, tamHitboxMeleeGrande, angulo, colorImpactoPixel, true);
+        AplicarLienzo();
 
         AplicarDanioCaja(centro, tamHitboxMeleeGrande, angulo, danioMeleeGrande, dirAtaque, empujeMeleeGrande);
 
-        yield return new WaitForSeconds(0.35f);
+        yield return new WaitForSeconds(0.14f);
+        rb.linearVelocity = Vector2.zero;
+        LimpiarYApagarLienzo();
+        yield return new WaitForSeconds(0.22f);
         FinalizarAccion();
     }
 
@@ -402,12 +506,12 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         velObjetivo = Vector2.zero;
         ReproducirAnim(aPrepararRadialZigZag);
 
-        indicador.MostrarAviso(tiempoBrilloAntesAtaque);
-        yield return new WaitForSeconds(tiempoBrilloAntesAtaque);
+        indicador.MostrarAviso(tiempoAvisoAntesAtaque);
+        yield return new WaitForSeconds(tiempoAvisoAntesAtaque);
 
         for (int o = 0; o < cantidadOleadasZigZag; o++)
         {
-            if (Bloqueado()) { FinalizarAccion(); yield break; }
+            if (Bloqueado() || vencida) { FinalizarAccion(); yield break; }
 
             float desfase = o * (180f / balasPorOleadaZigZag);
             for (int i = 0; i < balasPorOleadaZigZag; i++)
@@ -436,17 +540,20 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         velObjetivo = Vector2.zero;
         ReproducirAnim(aLanzarMetralleta);
 
-        indicador.MostrarAviso(tiempoBrilloAntesAtaque);
-        yield return new WaitForSeconds(tiempoBrilloAntesAtaque);
+        indicador.MostrarAviso(tiempoAvisoAntesAtaque);
+        yield return new WaitForSeconds(tiempoAvisoAntesAtaque);
 
         for (int i = 0; i < cantidadBalasMetralleta; i++)
         {
-            if (Bloqueado() || player == null) { FinalizarAccion(); yield break; }
+            if (Bloqueado() || vencida || player == null) { FinalizarAccion(); yield break; }
 
             Vector3 origen = puntoDisparo != null ? puntoDisparo.position : transform.position;
             Vector2 haciaJugador = ((Vector2)player.position - (Vector2)origen).normalized;
             float anguloBase = Mathf.Atan2(haciaJugador.y, haciaJugador.x) * Mathf.Rad2Deg;
-            float anguloFinal = (anguloBase + Random.Range(-anguloImprecision, anguloImprecision)) * Mathf.Deg2Rad;
+
+            float abanico = Mathf.Sin(i * 0.45f) * arcoBarridoGrados;
+            float ruido = UnityEngine.Random.Range(-anguloImprecision, anguloImprecision);
+            float anguloFinal = (anguloBase + abanico + ruido) * Mathf.Deg2Rad;
 
             Vector2 dirBala = new Vector2(Mathf.Cos(anguloFinal), Mathf.Sin(anguloFinal));
             InstanciarBala(dirBala, velBalaMetralleta, 1, 4f);
@@ -463,36 +570,46 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         ReproducirAnim(aCargarMeleeLargo);
 
         indicador.MostrarAviso(tiempoCargaSuperMelee);
+        srLienzo.enabled = true;
 
-        float t = tiempoCargaSuperMelee;
+        float t = 0f;
         Vector2 dirApuntado = Vector2.down;
+        float tiempoFijar = Mathf.Max(0.15f, tiempoCargaSuperMelee - 0.25f);
 
-        lineaGuia.enabled = true;
-        lineaGuia.startColor = colorAvisoMeleeLargo;
-        lineaGuia.endColor = colorAvisoMeleeLargo;
-        lineaGuia.widthMultiplier = tamHitboxSuperMelee.y;
-
-        while (t > 0f)
+        while (t < tiempoCargaSuperMelee)
         {
-            if (Bloqueado())
+            if (Bloqueado() || vencida)
             {
-                lineaGuia.enabled = false;
+                LimpiarYApagarLienzo();
                 indicador.CancelarAviso();
                 FinalizarAccion();
                 yield break;
             }
 
-            t -= Time.deltaTime;
-            if (player != null)
+            t += Time.deltaTime;
+
+            if (t < tiempoFijar && player != null)
             {
                 Vector2 hacia = (Vector2)player.position - (Vector2)transform.position;
                 if (hacia.sqrMagnitude > 0.01f) dirApuntado = hacia.normalized;
+                velObjetivo = dirApuntado * velMovimientoLento;
+            }
+            else
+            {
+                velObjetivo = Vector2.zero;
             }
 
-            velObjetivo = dirApuntado * velMovimientoLento;
-            float distanciaVisual = offsetSuperMelee + (tamHitboxSuperMelee.x * 0.5f);
-            lineaGuia.SetPosition(0, transform.position);
-            lineaGuia.SetPosition(1, (Vector2)transform.position + dirApuntado * distanciaVisual);
+            float frec = t < tiempoFijar ? 18f : 38f;
+            Array.Copy(bufferLimpio, bufferTrabajo, bufferLimpio.Length);
+
+            if (Mathf.Sin(t * frec) >= -0.15f)
+            {
+                Vector2 centroCarril = (Vector2)transform.position + dirApuntado * offsetSuperMelee;
+                float ang = Mathf.Atan2(dirApuntado.y, dirApuntado.x) * Mathf.Rad2Deg;
+                DibujarCajaRotadaPixel(centroCarril, tamHitboxSuperMelee, ang, colorAvisoPixel, false);
+            }
+
+            AplicarLienzo();
             yield return null;
         }
 
@@ -500,15 +617,17 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         rb.linearVelocity = Vector2.zero;
         ReproducirAnim(aLanzarMeleeLargo);
 
-        lineaGuia.startColor = colorImpactoMeleeLargo;
-        lineaGuia.endColor = colorImpactoMeleeLargo;
+        Vector2 centroImpacto = (Vector2)transform.position + dirApuntado * offsetSuperMelee;
+        float anguloFinal = Mathf.Atan2(dirApuntado.y, dirApuntado.x) * Mathf.Rad2Deg;
 
-        Vector2 centro = (Vector2)transform.position + dirApuntado * offsetSuperMelee;
-        float angulo = Mathf.Atan2(dirApuntado.y, dirApuntado.x) * Mathf.Rad2Deg;
-        AplicarDanioCaja(centro, tamHitboxSuperMelee, angulo, danioSuperMelee, dirApuntado, empujeSuperMelee);
+        Array.Copy(bufferLimpio, bufferTrabajo, bufferLimpio.Length);
+        DibujarCajaRotadaPixel(centroImpacto, tamHitboxSuperMelee, anguloFinal, colorImpactoPixel, true);
+        AplicarLienzo();
 
-        yield return new WaitForSeconds(0.2f);
-        lineaGuia.enabled = false;
+        AplicarDanioCaja(centroImpacto, tamHitboxSuperMelee, anguloFinal, danioSuperMelee, dirApuntado, empujeSuperMelee);
+
+        yield return new WaitForSeconds(0.18f);
+        LimpiarYApagarLienzo();
         yield return new WaitForSeconds(0.25f);
         FinalizarAccion();
     }
@@ -520,11 +639,48 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         rb.linearVelocity = Vector2.zero;
 
         DestruirColumnasDeLaSala();
-        yield return StartCoroutine(RutinaInvocarEnemigos());
+        yield return StartCoroutine(RutinaInvocarTresGhouls());
     }
 
     private void DestruirColumnasDeLaSala()
     {
+        if (tilemapColumnas != null)
+        {
+            Bounds bArena = ObtenerBoundsArena();
+            Vector3Int minCell = tilemapColumnas.WorldToCell(bArena.min);
+            Vector3Int maxCell = tilemapColumnas.WorldToCell(bArena.max);
+
+            for (int x = minCell.x; x <= maxCell.x; x++)
+            {
+                for (int y = minCell.y; y <= maxCell.y; y++)
+                {
+                    Vector3Int posCelda = new Vector3Int(x, y, 0);
+                    if (tilemapColumnas.HasTile(posCelda))
+                    {
+                        if (prefabEfectoDestruccionColumna != null)
+                        {
+                            Vector3 posMundo = tilemapColumnas.GetCellCenterWorld(posCelda);
+                            Instantiate(prefabEfectoDestruccionColumna, posMundo, Quaternion.identity);
+                        }
+                        tilemapColumnas.SetTile(posCelda, null);
+                    }
+                }
+            }
+
+            if (desactivarTilemapCompleto)
+            {
+                tilemapColumnas.gameObject.SetActive(false);
+            }
+            else if (tilemapColumnas.TryGetComponent(out CompositeCollider2D comp))
+            {
+                comp.GenerateGeometry();
+                for (int i = tilemapColumnas.transform.childCount - 1; i >= 0; i--)
+                {
+                    Destroy(tilemapColumnas.transform.GetChild(i).gameObject);
+                }
+            }
+        }
+
         if (columnasSala != null && columnasSala.Length > 0)
         {
             for (int i = 0; i < columnasSala.Length; i++)
@@ -539,19 +695,9 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
                 }
             }
         }
-
-        GameObject[] porTag = GameObject.FindGameObjectsWithTag("Columna");
-        for (int i = 0; i < porTag.Length; i++)
-        {
-            if (prefabEfectoDestruccionColumna != null)
-            {
-                Instantiate(prefabEfectoDestruccionColumna, porTag[i].transform.position, Quaternion.identity);
-            }
-            Destroy(porTag[i]);
-        }
     }
 
-    private IEnumerator RutinaInvocarEnemigos()
+    private IEnumerator RutinaInvocarTresGhouls()
     {
         ejecutandoAccion = true;
         velObjetivo = Vector2.zero;
@@ -561,28 +707,67 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         vida.ActivarInvulnerabilidad(duracionInvulnerableInvocacion);
         sprite.color = colorInvulnerable;
 
-        float intervaloSpawn = duracionInvulnerableInvocacion / Mathf.Max(1, cantidadEnemigosInvocar + 1);
-
-        for (int i = 0; i < cantidadEnemigosInvocar; i++)
+        Vector2 centroJefe = transform.position;
+        Vector2[] posicionesSpawn = new Vector2[3]
         {
-            yield return new WaitForSeconds(intervaloSpawn);
-            SpawnearEnemigoAleatorio(i);
+            AjustarPuntoDentroDeArena(centroJefe + Vector2.left * distanciaSpawnGhoul),
+            AjustarPuntoDentroDeArena(centroJefe + Vector2.right * distanciaSpawnGhoul),
+            AjustarPuntoDentroDeArena(centroJefe + Vector2.down * distanciaSpawnGhoul)
+        };
+
+        srLienzo.enabled = true;
+        float tiempoSellos = duracionInvulnerableInvocacion * 0.65f;
+        float t = 0f;
+
+        while (t < tiempoSellos && !vencida)
+        {
+            t += Time.deltaTime;
+            Array.Copy(bufferLimpio, bufferTrabajo, bufferLimpio.Length);
+
+            if (Mathf.Sin(t * 24f) >= -0.2f)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    DibujarCirculoPixel(posicionesSpawn[i], 0.55f, colorAvisoPixel);
+                    DibujarCirculoPixel(posicionesSpawn[i], 0.25f, colorImpactoPixel);
+                }
+            }
+
+            AplicarLienzo();
+            yield return null;
         }
 
-        yield return new WaitForSeconds(intervaloSpawn);
+        LimpiarYApagarLienzo();
+
+        if (!vencida)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                SpawnearGhoulEnPosicion(posicionesSpawn[i]);
+            }
+        }
+
+        float resto = Mathf.Max(0.1f, duracionInvulnerableInvocacion - tiempoSellos);
+        yield return new WaitForSeconds(resto);
+
         sprite.color = colorBase;
         FinalizarAccion();
     }
 
-    private void SpawnearEnemigoAleatorio(int indice)
+    private Vector2 AjustarPuntoDentroDeArena(Vector2 puntoDeseado)
     {
-        if (prefabsEnemigosRandom == null || prefabsEnemigosRandom.Length == 0) return;
+        Bounds b = ObtenerBoundsArena();
+        float margen = 0.7f;
+        float x = Mathf.Clamp(puntoDeseado.x, b.min.x + margen, b.max.x - margen);
+        float y = Mathf.Clamp(puntoDeseado.y, b.min.y + margen, b.max.y - margen);
+        return new Vector2(x, y);
+    }
 
-        GameObject prefab = prefabsEnemigosRandom[Random.Range(0, prefabsEnemigosRandom.Length)];
-        if (prefab == null) return;
+    private void SpawnearGhoulEnPosicion(Vector2 posSpawn)
+    {
+        if (prefabGhoul == null) return;
 
-        Vector2 posSpawn = ObtenerPosicionSpawn(indice);
-        GameObject nuevo = Instantiate(prefab, posSpawn, Quaternion.identity);
+        GameObject nuevo = Instantiate(prefabGhoul, posSpawn, Quaternion.identity);
 
         MonoBehaviour[] scripts = nuevo.GetComponents<MonoBehaviour>();
         for (int i = 0; i < scripts.Length; i++)
@@ -590,43 +775,15 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
             if (scripts[i] != null) scripts[i].enabled = true;
         }
 
-        if (nuevo.TryGetComponent(out Vida vidaEnemigo))
+        if (nuevo.TryGetComponent(out Vida vidaGhoul))
         {
-            enemigosInvocados.Add(vidaEnemigo);
+            enemigosInvocados.Add(vidaGhoul);
         }
     }
 
-    private Vector2 ObtenerPosicionSpawn(int indice)
+    private void LimpiarEnemigosMuertos()
     {
-        if (puntosSpawnEnemigos != null && puntosSpawnEnemigos.Length > 0)
-        {
-            Transform pt = puntosSpawnEnemigos[indice % puntosSpawnEnemigos.Length];
-            if (pt != null) return pt.position;
-        }
-
-        int capaEnemigo = LayerMask.NameToLayer("Enemy");
-        for (int intento = 0; intento < 20; intento++)
-        {
-            float ang = Random.Range(0f, Mathf.PI * 2f);
-            float dist = Random.Range(2.2f, 4.5f);
-            Vector2 cand = (Vector2)transform.position + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * dist;
-
-            if (limitesArena != null && !limitesArena.bounds.Contains(cand)) continue;
-
-            Collider2D[] hits = Physics2D.OverlapCircleAll(cand, 0.5f);
-            bool ocupado = false;
-            for (int j = 0; j < hits.Length; j++)
-            {
-                if (!hits[j].isTrigger && hits[j].gameObject.layer != capaEnemigo && !hits[j].CompareTag("Player"))
-                {
-                    ocupado = true;
-                    break;
-                }
-            }
-            if (!ocupado) return cand;
-        }
-
-        return (Vector2)transform.position + Random.insideUnitCircle * 2f;
+        enemigosInvocados.RemoveAll(e => e == null);
     }
 
     private IEnumerator RutinaPatronesTouhou()
@@ -635,15 +792,15 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         velObjetivo = Vector2.zero;
         ReproducirAnim(aLanzarPatronesTouhou);
 
-        indicador.MostrarAviso(tiempoBrilloAntesAtaque);
-        yield return new WaitForSeconds(tiempoBrilloAntesAtaque);
+        indicador.MostrarAviso(tiempoAvisoAntesAtaque);
+        yield return new WaitForSeconds(tiempoAvisoAntesAtaque);
 
-        int tipoPatron = Random.Range(0, 2);
+        int tipoPatron = UnityEngine.Random.Range(0, 2);
         float anguloAcumulado = 0f;
 
         for (int o = 0; o < oleadasTouhou; o++)
         {
-            if (Bloqueado()) { FinalizarAccion(); yield break; }
+            if (Bloqueado() || vencida) { FinalizarAccion(); yield break; }
 
             if (tipoPatron == 0)
             {
@@ -683,6 +840,7 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         ReproducirAnim(aLanzarCuadriculaLaser);
 
         indicador.MostrarAviso(tiempoAvisoCuadricula);
+        srLienzo.enabled = true;
 
         Bounds b = ObtenerBoundsArena();
         float margen = 0.8f;
@@ -691,39 +849,227 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         float minY = b.min.y + margen;
         float maxY = b.max.y - margen;
 
-        float offsetAleatorioX = Random.Range(-0.6f, 0.6f);
-        float offsetAleatorioY = Random.Range(-0.6f, 0.6f);
+        float offsetX = UnityEngine.Random.Range(-0.5f, 0.5f);
+        float offsetY = UnityEngine.Random.Range(-0.5f, 0.5f);
 
-        for (int i = 1; i <= lineasVerticales; i++)
+        float[] coordsX = new float[lineasVerticales];
+        float[] coordsY = new float[lineasHorizontales];
+
+        for (int i = 0; i < lineasVerticales; i++)
         {
-            float t = i / (float)(lineasVerticales + 1);
-            float x = Mathf.Lerp(minX, maxX, t) + offsetAleatorioX;
-            CrearLineaCuadricula(new Vector2(x, b.min.y), new Vector2(x, b.max.y));
+            float t = (i + 1) / (float)(lineasVerticales + 1);
+            coordsX[i] = Mathf.Lerp(minX, maxX, t) + offsetX;
         }
 
-        for (int j = 1; j <= lineasHorizontales; j++)
+        for (int j = 0; j < lineasHorizontales; j++)
         {
-            float t = j / (float)(lineasHorizontales + 1);
-            float y = Mathf.Lerp(minY, maxY, t) + offsetAleatorioY;
-            CrearLineaCuadricula(new Vector2(b.min.x, y), new Vector2(b.max.x, y));
+            float t = (j + 1) / (float)(lineasHorizontales + 1);
+            coordsY[j] = Mathf.Lerp(minY, maxY, t) + offsetY;
         }
 
-        yield return new WaitForSeconds(tiempoAvisoCuadricula + duracionCuadricula);
+        float timer = 0f;
+        while (timer < tiempoAvisoCuadricula)
+        {
+            if (Bloqueado() || vencida) { LimpiarYApagarLienzo(); FinalizarAccion(); yield break; }
+            timer += Time.deltaTime;
+            float frec = timer < tiempoAvisoCuadricula * 0.7f ? 16f : 34f;
+
+            Array.Copy(bufferLimpio, bufferTrabajo, bufferLimpio.Length);
+            if (Mathf.Sin(timer * frec) >= -0.15f)
+            {
+                for (int i = 0; i < lineasVerticales; i++)
+                {
+                    DibujarLineaMundoPixel(new Vector2(coordsX[i], b.min.y), new Vector2(coordsX[i], b.max.y), 1, colorAvisoPixel, true);
+                }
+                for (int j = 0; j < lineasHorizontales; j++)
+                {
+                    DibujarLineaMundoPixel(new Vector2(b.min.x, coordsY[j]), new Vector2(b.max.x, coordsY[j]), 1, colorAvisoPixel, true);
+                }
+            }
+            AplicarLienzo();
+            yield return null;
+        }
+
+        timer = 0f;
+        float timerDanio = 0f;
+        int ppu = Mathf.Max(8, pixelesPorUnidad);
+
+        while (timer < duracionCuadricula)
+        {
+            if (Bloqueado() || vencida) { LimpiarYApagarLienzo(); FinalizarAccion(); yield break; }
+            timer += Time.deltaTime;
+            timerDanio -= Time.deltaTime;
+
+            int pulso = Mathf.RoundToInt(Mathf.Sin(Time.time * 32f) * 2f);
+            int grosorExt = Mathf.Max(2, grosorLaserCuadriculaPx + pulso);
+            int grosorInt = Mathf.Max(1, Mathf.RoundToInt(grosorExt * 0.55f));
+
+            Array.Copy(bufferLimpio, bufferTrabajo, bufferLimpio.Length);
+
+            for (int i = 0; i < lineasVerticales; i++)
+            {
+                Vector2 a = new Vector2(coordsX[i], b.min.y);
+                Vector2 fin = new Vector2(coordsX[i], b.max.y);
+                DibujarLineaMundoPixel(a, fin, grosorExt, colorAvisoPixel, false);
+                DibujarLineaMundoPixel(a, fin, grosorInt, colorImpactoPixel, false);
+            }
+
+            for (int j = 0; j < lineasHorizontales; j++)
+            {
+                Vector2 a = new Vector2(b.min.x, coordsY[j]);
+                Vector2 fin = new Vector2(b.max.x, coordsY[j]);
+                DibujarLineaMundoPixel(a, fin, grosorExt, colorAvisoPixel, false);
+                DibujarLineaMundoPixel(a, fin, grosorInt, colorImpactoPixel, false);
+            }
+
+            AplicarLienzo();
+
+            if (timerDanio <= 0f)
+            {
+                timerDanio = 0.12f;
+                float anchoMundo = grosorExt / (float)ppu;
+
+                for (int i = 0; i < lineasVerticales; i++)
+                {
+                    Vector2 c = new Vector2(coordsX[i], b.center.y);
+                    AplicarDanioCaja(c, new Vector2(anchoMundo, b.size.y), 0f, danioLaserCuadricula, Vector2.right, 5f);
+                }
+                for (int j = 0; j < lineasHorizontales; j++)
+                {
+                    Vector2 c = new Vector2(b.center.x, coordsY[j]);
+                    AplicarDanioCaja(c, new Vector2(b.size.x, anchoMundo), 0f, danioLaserCuadricula, Vector2.up, 5f);
+                }
+            }
+
+            yield return null;
+        }
+
+        LimpiarYApagarLienzo();
         FinalizarAccion();
     }
 
-    private void CrearLineaCuadricula(Vector2 a, Vector2 b)
+    private void DibujarCajaRotadaPixel(Vector2 centroMundo, Vector2 tamano, float anguloGrados, Color32 color, bool rellenar)
     {
-        GameObject obj = new GameObject("LaserCuadricula");
-        LaserCuadricula lc = obj.AddComponent<LaserCuadricula>();
-        lc.Inicializar(
-            a, b,
-            tiempoAvisoCuadricula, duracionCuadricula,
-            grosorAvisoLaser, grosorDisparoLaser,
-            colorAvisoLaser, colorDisparoLaser,
-            danioLaserCuadricula, empujeMeleeGrande * 0.6f,
-            capaJugador
-        );
+        float rad = anguloGrados * Mathf.Deg2Rad;
+        Vector2 dir = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad));
+        Vector2 perp = new Vector2(-dir.y, dir.x);
+
+        Vector2 extX = dir * (tamano.x * 0.5f);
+        Vector2 extY = perp * (tamano.y * 0.5f);
+
+        Vector2 c1 = centroMundo - extX - extY;
+        Vector2 c2 = centroMundo + extX - extY;
+        Vector2 c3 = centroMundo + extX + extY;
+        Vector2 c4 = centroMundo - extX + extY;
+
+        DibujarLineaMundoPixel(c1, c2, 1, color, !rellenar);
+        DibujarLineaMundoPixel(c2, c3, 1, color, !rellenar);
+        DibujarLineaMundoPixel(c3, c4, 1, color, !rellenar);
+        DibujarLineaMundoPixel(c4, c1, 1, color, !rellenar);
+
+        if (rellenar)
+        {
+            int pasos = Mathf.CeilToInt(tamano.y * pixelesPorUnidad);
+            for (int i = -pasos / 2; i <= pasos / 2; i += 2)
+            {
+                float offset = i / (float)pixelesPorUnidad;
+                Vector2 pInicio = centroMundo - extX + perp * offset;
+                Vector2 pFin = centroMundo + extX + perp * offset;
+                DibujarLineaMundoPixel(pInicio, pFin, 2, color, false);
+            }
+        }
+    }
+
+    private void DibujarCirculoPixel(Vector2 centroMundo, float radioMundo, Color32 color)
+    {
+        int ppu = Mathf.Max(8, pixelesPorUnidad);
+        int cx = Mathf.RoundToInt((centroMundo.x - esquinaMinLienzo.x) * ppu);
+        int cy = Mathf.RoundToInt((centroMundo.y - esquinaMinLienzo.y) * ppu);
+        int r = Mathf.RoundToInt(radioMundo * ppu);
+
+        int x = r;
+        int y = 0;
+        int err = 0;
+
+        while (x >= y)
+        {
+            PintarPixelSeguro(cx + x, cy + y, color);
+            PintarPixelSeguro(cx + y, cy + x, color);
+            PintarPixelSeguro(cx - y, cy + x, color);
+            PintarPixelSeguro(cx - x, cy + y, color);
+            PintarPixelSeguro(cx - x, cy - y, color);
+            PintarPixelSeguro(cx - y, cy - x, color);
+            PintarPixelSeguro(cx + y, cy - x, color);
+            PintarPixelSeguro(cx + x, cy - y, color);
+
+            y += 1;
+            err += 1 + 2 * y;
+            if (2 * (err - x) + 1 > 0)
+            {
+                x -= 1;
+                err += 1 - 2 * x;
+            }
+        }
+    }
+
+    private void DibujarLineaMundoPixel(Vector2 aMundo, Vector2 bMundo, int grosorPx, Color32 color, bool punteada)
+    {
+        int ppu = Mathf.Max(8, pixelesPorUnidad);
+        int x0 = Mathf.RoundToInt((aMundo.x - esquinaMinLienzo.x) * ppu);
+        int y0 = Mathf.RoundToInt((aMundo.y - esquinaMinLienzo.y) * ppu);
+        int x1 = Mathf.RoundToInt((bMundo.x - esquinaMinLienzo.x) * ppu);
+        int y1 = Mathf.RoundToInt((bMundo.y - esquinaMinLienzo.y) * ppu);
+
+        int dx = Mathf.Abs(x1 - x0);
+        int dy = Mathf.Abs(y1 - y0);
+        int sx = x0 < x1 ? 1 : -1;
+        int sy = y0 < y1 ? 1 : -1;
+        int err = dx - dy;
+        int paso = 0;
+
+        while (true)
+        {
+            if (!punteada || (paso % 4 != 3))
+            {
+                PintarCuadroPixel(x0, y0, grosorPx, color);
+            }
+
+            if (x0 == x1 && y0 == y1) break;
+
+            int e2 = 2 * err;
+            if (e2 > -dy) { err -= dy; x0 += sx; }
+            if (e2 < dx) { err += dx; y0 += sy; }
+            paso++;
+        }
+    }
+
+    private void PintarCuadroPixel(int cx, int cy, int grosor, Color32 color)
+    {
+        int inicio = -(grosor / 2);
+        int fin = inicio + grosor;
+
+        for (int ox = inicio; ox < fin; ox++)
+        {
+            for (int oy = inicio; oy < fin; oy++)
+            {
+                PintarPixelSeguro(cx + ox, cy + oy, color);
+            }
+        }
+    }
+
+    private void PintarPixelSeguro(int x, int y, Color32 color)
+    {
+        if (x >= 0 && x < anchoTex && y >= 0 && y < altoTex)
+        {
+            bufferTrabajo[y * anchoTex + x] = color;
+        }
+    }
+
+    private void AplicarLienzo()
+    {
+        if (texLienzo == null) return;
+        texLienzo.SetPixels32(bufferTrabajo);
+        texLienzo.Apply(false);
     }
 
     private Bounds ObtenerBoundsArena()
@@ -788,10 +1134,12 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
 
     private void EjecutarDerrota()
     {
+        if (vencida) return;
         vencida = true;
+
         StopAllCoroutines();
         if (indicador != null) indicador.CancelarAviso();
-        if (lineaGuia != null) lineaGuia.enabled = false;
+        LimpiarYApagarLienzo();
         if (sprite != null) sprite.color = colorBase;
 
         velObjetivo = Vector2.zero;
@@ -805,6 +1153,112 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
                 enemigosInvocados[i].ForzarMuerte();
             }
         }
+
+        StartCoroutine(SecuenciaPostDerrota());
+    }
+
+    private IEnumerator SecuenciaPostDerrota()
+    {
+        float espera = aVencida != null ? Mathf.Max(aVencida.length, esperaAntesDeDialogoFinal) : esperaAntesDeDialogoFinal;
+        yield return new WaitForSeconds(espera);
+
+        Jugador jug = Jugador.Instancia;
+        AtaqueJugador atkJug = jug != null ? jug.GetComponent<AtaqueJugador>() : null;
+
+        if (jug != null) jug.EstablecerEstadoEncadenado(true, null, null);
+        if (atkJug != null) atkJug.EstablecerBloqueoExterno(true);
+
+        if (dialogosDerrota != null && dialogosDerrota.Length > 0 && panelDialogoFinal != null)
+        {
+            panelDialogoFinal.SetActive(true);
+
+            for (int i = 0; i < dialogosDerrota.Length; i++)
+            {
+                LineaDialogoJefe actual = dialogosDerrota[i];
+
+                if (textoNombreUI != null) textoNombreUI.text = actual.nombreHablante;
+                if (textoContenidoUI != null) textoContenidoUI.text = string.Empty;
+
+                if (imagenRetratoUI != null)
+                {
+                    if (actual.ilustracionHablante != null)
+                    {
+                        imagenRetratoUI.sprite = actual.ilustracionHablante;
+                        imagenRetratoUI.enabled = true;
+                    }
+                    else
+                    {
+                        imagenRetratoUI.enabled = false;
+                    }
+                }
+
+                string linea = actual.texto;
+                yield return null;
+
+                for (int c = 0; c < linea.Length; c++)
+                {
+                    if (textoContenidoUI != null) textoContenidoUI.text += linea[c];
+
+                    float t = tiempoPorLetra;
+                    bool saltar = false;
+                    while (t > 0f)
+                    {
+                        t -= Time.deltaTime;
+                        if (PresionoAvanzarDialogo())
+                        {
+                            saltar = true;
+                            break;
+                        }
+                        yield return null;
+                    }
+
+                    if (saltar)
+                    {
+                        if (textoContenidoUI != null) textoContenidoUI.text = linea;
+                        break;
+                    }
+                }
+
+                yield return null;
+                while (!PresionoAvanzarDialogo())
+                {
+                    yield return null;
+                }
+            }
+
+            panelDialogoFinal.SetActive(false);
+        }
+
+        if (jug != null) jug.EstablecerEstadoEncadenado(false, null, null);
+        if (atkJug != null) atkJug.EstablecerBloqueoExterno(false);
+
+        if (portalSalida != null)
+        {
+            portalSalida.EncenderPortal();
+        }
+    }
+
+    private bool PresionoAvanzarDialogo()
+    {
+        var kb = Keyboard.current;
+        if (kb != null && (kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame || kb.eKey.wasPressedThisFrame || kb.zKey.wasPressedThisFrame))
+        {
+            return true;
+        }
+
+        var mouse = Mouse.current;
+        if (mouse != null && mouse.leftButton.wasPressedThisFrame)
+        {
+            return true;
+        }
+
+        var gp = Gamepad.current;
+        if (gp != null && (gp.buttonSouth.wasPressedThisFrame || gp.buttonWest.wasPressedThisFrame))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     void OnDisable()
@@ -812,10 +1266,16 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         if (vencida) return;
         StopAllCoroutines();
         if (indicador != null) indicador.CancelarAviso();
-        if (lineaGuia != null) lineaGuia.enabled = false;
+        LimpiarYApagarLienzo();
         if (sprite != null) sprite.color = colorBase;
         ejecutandoAccion = false;
         dasheando = false;
+    }
+
+    void OnDestroy()
+    {
+        if (texLienzo != null) Destroy(texLienzo);
+        if (objLienzo != null) Destroy(objLienzo);
     }
 
     void OnDrawGizmosSelected()
@@ -823,10 +1283,9 @@ public class LaInquisidora : MonoBehaviour, IRangoDeteccion
         Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.25f);
         Gizmos.DrawWireSphere(transform.position, rangoDeteccion);
 
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube((Vector2)transform.position + Vector2.right * offsetMeleeGrande, tamHitboxMeleeGrande);
-
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireCube((Vector2)transform.position + Vector2.right * offsetSuperMelee, tamHitboxSuperMelee);
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere((Vector2)transform.position + Vector2.left * distanciaSpawnGhoul, 0.4f);
+        Gizmos.DrawWireSphere((Vector2)transform.position + Vector2.right * distanciaSpawnGhoul, 0.4f);
+        Gizmos.DrawWireSphere((Vector2)transform.position + Vector2.down * distanciaSpawnGhoul, 0.4f);
     }
 }
