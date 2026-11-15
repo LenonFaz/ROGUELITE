@@ -131499,7 +131499,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 899174175181809361, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: nombreEscenaAlMorir
-      value: 
+      value: GOPISO1
       objectReference: {fileID: 0}
     - target: {fileID: 1374719718505522085, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_Name
@@ -153171,7 +153171,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 422b954f8213eec4d9b9d17b10f22ecc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PortalPiso
-  nombreSiguienteEscena: PISO 2.1
+  nombreSiguienteEscena: PISO 2
   indiceSiguienteEscena: 0
   requiereActivacionExterna: 0
   apagarAlSalir: 1

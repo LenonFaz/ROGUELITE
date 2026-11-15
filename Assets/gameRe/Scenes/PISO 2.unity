@@ -10296,6 +10296,7 @@ MonoBehaviour:
   - {fileID: 1074300919}
   - {fileID: 2042604900}
   puertas: []
+  distanciaAdentroParaCerrarPuertas: 0.65
   reiniciarLuzAlEntrar: 1
   limitarCamaraAEsteEspacio: 0
   ajustarZoomCamara: 0
@@ -22259,6 +22260,7 @@ MonoBehaviour:
   - {fileID: 1520610196}
   puertas:
   - {fileID: 0}
+  distanciaAdentroParaCerrarPuertas: 0.65
   reiniciarLuzAlEntrar: 1
   limitarCamaraAEsteEspacio: 0
   ajustarZoomCamara: 0
@@ -24064,6 +24066,7 @@ MonoBehaviour:
   - {fileID: 1770978771}
   - {fileID: 1770978771}
   puertas: []
+  distanciaAdentroParaCerrarPuertas: 0.65
   reiniciarLuzAlEntrar: 1
   limitarCamaraAEsteEspacio: 0
   ajustarZoomCamara: 0
@@ -165825,7 +165828,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 899174175181809361, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: nombreEscenaAlMorir
-      value: 
+      value: GOPISO2
       objectReference: {fileID: 0}
     - target: {fileID: 1374719718505522085, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_Name
