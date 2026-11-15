@@ -125,6 +125,9 @@ public class Vida : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        Debug.Log("Jugador murió");
+        Time.timeScale = 1f;
+        FadeManager.Instance.CargarEscena("GameOver");
     }
 
     void OnDisable()
