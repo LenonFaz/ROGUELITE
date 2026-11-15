@@ -168143,7 +168143,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 899174175181809361, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: nombreEscenaAlMorir
-      value: 
+      value: GOPISO2
       objectReference: {fileID: 0}
     - target: {fileID: 1374719718505522085, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_Name

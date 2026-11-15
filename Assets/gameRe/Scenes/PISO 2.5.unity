@@ -241,6 +241,7 @@ MonoBehaviour:
   puertas:
   - {fileID: 2011313400}
   - {fileID: 2004010714}
+  distanciaAdentroParaCerrarPuertas: 0.65
   reiniciarLuzAlEntrar: 1
   limitarCamaraAEsteEspacio: 0
   ajustarZoomCamara: 0
@@ -771,9 +772,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6d39f79175a9184fab56007a7eeb867, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Puerta
-  spriteAbierta: {fileID: 0}
-  spriteCerrada: {fileID: 0}
+  orientacion: 0
+  voltearSpriteLateral: 0
   iniciarAbierta: 1
+  spritePuerta: {fileID: 129147158}
+  spriteFrente: {fileID: 0}
+  spriteLateral: {fileID: 0}
+  animPuerta: {fileID: 0}
+  clipAbrirFrente: {fileID: 0}
+  clipCerrarFrente: {fileID: 0}
+  clipAbrirLateral: {fileID: 0}
+  clipCerrarLateral: {fileID: 0}
+  contenedorVisual: {fileID: 0}
+  alturaSubidaAlAbrir: 1.15
+  duracionSubida: 0.28
+  duracionBajada: 0.16
+  desvanecerAlSubir: 1
+  alphaCuandoAbierta: 0
 --- !u!61 &129147157
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -110629,9 +110644,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6d39f79175a9184fab56007a7eeb867, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Puerta
-  spriteAbierta: {fileID: 0}
-  spriteCerrada: {fileID: 0}
+  orientacion: 0
+  voltearSpriteLateral: 0
   iniciarAbierta: 1
+  spritePuerta: {fileID: 700243833}
+  spriteFrente: {fileID: 0}
+  spriteLateral: {fileID: 0}
+  animPuerta: {fileID: 0}
+  clipAbrirFrente: {fileID: 0}
+  clipCerrarFrente: {fileID: 0}
+  clipAbrirLateral: {fileID: 0}
+  clipCerrarLateral: {fileID: 0}
+  contenedorVisual: {fileID: 0}
+  alturaSubidaAlAbrir: 1.15
+  duracionSubida: 0.28
+  duracionBajada: 0.16
+  desvanecerAlSubir: 1
+  alphaCuandoAbierta: 0
 --- !u!61 &700243836
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -114257,9 +114286,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6d39f79175a9184fab56007a7eeb867, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Puerta
-  spriteAbierta: {fileID: 0}
-  spriteCerrada: {fileID: 0}
+  orientacion: 0
+  voltearSpriteLateral: 0
   iniciarAbierta: 1
+  spritePuerta: {fileID: 933594132}
+  spriteFrente: {fileID: 0}
+  spriteLateral: {fileID: 0}
+  animPuerta: {fileID: 0}
+  clipAbrirFrente: {fileID: 0}
+  clipCerrarFrente: {fileID: 0}
+  clipAbrirLateral: {fileID: 0}
+  clipCerrarLateral: {fileID: 0}
+  contenedorVisual: {fileID: 0}
+  alturaSubidaAlAbrir: 1.15
+  duracionSubida: 0.28
+  duracionBajada: 0.16
+  desvanecerAlSubir: 1
+  alphaCuandoAbierta: 0
 --- !u!61 &933594135
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -114360,6 +114403,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 899174175181809361, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
+      propertyPath: nombreEscenaAlMorir
+      value: GOPISO2.5
+      objectReference: {fileID: 0}
     - target: {fileID: 1374719718505522085, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_Name
       value: player
@@ -115483,6 +115530,7 @@ MonoBehaviour:
   - {fileID: 862947124}
   - {fileID: 465970545}
   puertas: []
+  distanciaAdentroParaCerrarPuertas: 0.65
   reiniciarLuzAlEntrar: 1
   limitarCamaraAEsteEspacio: 0
   ajustarZoomCamara: 0
@@ -115820,9 +115868,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6d39f79175a9184fab56007a7eeb867, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Puerta
-  spriteAbierta: {fileID: 0}
-  spriteCerrada: {fileID: 0}
+  orientacion: 0
+  voltearSpriteLateral: 0
   iniciarAbierta: 1
+  spritePuerta: {fileID: 1713180008}
+  spriteFrente: {fileID: 0}
+  spriteLateral: {fileID: 0}
+  animPuerta: {fileID: 0}
+  clipAbrirFrente: {fileID: 0}
+  clipCerrarFrente: {fileID: 0}
+  clipAbrirLateral: {fileID: 0}
+  clipCerrarLateral: {fileID: 0}
+  contenedorVisual: {fileID: 0}
+  alturaSubidaAlAbrir: 1.15
+  duracionSubida: 0.28
+  duracionBajada: 0.16
+  desvanecerAlSubir: 1
+  alphaCuandoAbierta: 0
 --- !u!61 &1713180007
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -146073,6 +146135,7 @@ MonoBehaviour:
   puertas:
   - {fileID: 700243835}
   - {fileID: 1713180006}
+  distanciaAdentroParaCerrarPuertas: 0.65
   reiniciarLuzAlEntrar: 1
   limitarCamaraAEsteEspacio: 0
   ajustarZoomCamara: 0
@@ -146227,9 +146290,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6d39f79175a9184fab56007a7eeb867, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Puerta
-  spriteAbierta: {fileID: 0}
-  spriteCerrada: {fileID: 0}
+  orientacion: 0
+  voltearSpriteLateral: 0
   iniciarAbierta: 1
+  spritePuerta: {fileID: 2004010716}
+  spriteFrente: {fileID: 0}
+  spriteLateral: {fileID: 0}
+  animPuerta: {fileID: 0}
+  clipAbrirFrente: {fileID: 0}
+  clipCerrarFrente: {fileID: 0}
+  clipAbrirLateral: {fileID: 0}
+  clipCerrarLateral: {fileID: 0}
+  contenedorVisual: {fileID: 0}
+  alturaSubidaAlAbrir: 1.15
+  duracionSubida: 0.28
+  duracionBajada: 0.16
+  desvanecerAlSubir: 1
+  alphaCuandoAbierta: 0
 --- !u!61 &2004010715
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -146455,9 +146532,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6d39f79175a9184fab56007a7eeb867, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Puerta
-  spriteAbierta: {fileID: 0}
-  spriteCerrada: {fileID: 0}
+  orientacion: 0
+  voltearSpriteLateral: 0
   iniciarAbierta: 1
+  spritePuerta: {fileID: 2011313398}
+  spriteFrente: {fileID: 0}
+  spriteLateral: {fileID: 0}
+  animPuerta: {fileID: 0}
+  clipAbrirFrente: {fileID: 0}
+  clipCerrarFrente: {fileID: 0}
+  clipAbrirLateral: {fileID: 0}
+  clipCerrarLateral: {fileID: 0}
+  contenedorVisual: {fileID: 0}
+  alturaSubidaAlAbrir: 1.15
+  duracionSubida: 0.28
+  duracionBajada: 0.16
+  desvanecerAlSubir: 1
+  alphaCuandoAbierta: 0
 --- !u!61 &2011313401
 BoxCollider2D:
   m_ObjectHideFlags: 0
