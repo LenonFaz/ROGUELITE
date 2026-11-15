@@ -12174,7 +12174,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.5471698, g: 0.29641235, b: 0.29165182, a: 0.392}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.392}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -42241,7 +42241,7 @@ Tilemap:
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
-  m_Color: {r: 0.3019608, g: 0.5372549, b: 0.34117648, a: 0.2627451}
+  m_Color: {r: 0.13363294, g: 0.24404822, b: 0.3679245, a: 0.2627451}
   m_Origin: {x: -16, y: -31, z: 0}
   m_Size: {x: 86, y: 46, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
