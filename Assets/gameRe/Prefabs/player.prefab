@@ -532,4 +532,4 @@ MonoBehaviour:
   duracionExtraPostAnim: 0.6
   duracionFadeFinalNegro: 0.85
   colorFondoMuerte: {r: 0, g: 0, b: 0, a: 1}
-  nombreEscenaAlMorir: 
+  nombreEscenaAlMorir: GameOver

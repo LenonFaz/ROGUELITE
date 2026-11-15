@@ -6,10 +6,10 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/MenuPrincipal.unity
+    path: Assets/gameRe/Scenes/MenuPrincipal.unity
     guid: aae1d0cb19f3be24582d834f8ed0b982
   - enabled: 1
-    path: Assets/Scenes/PISO 1.unity
+    path: Assets/gameRe/Scenes/PISO 1.unity
     guid: 1e5e87779636b9f4a9162652bdea34d7
   - enabled: 0
     path: Assets/Scenes/SampleScene.unity
@@ -18,19 +18,19 @@ EditorBuildSettings:
     path: Assets/Scenes/SceneMago.unity
     guid: 6120c23610d44dc469f61485b2cc3446
   - enabled: 1
-    path: Assets/Scenes/PISO 2.unity
-    guid: 856986eb3687a1c4088553d9cc38dc47
-  - enabled: 1
-    path: Assets/Scenes/PISO 2.5.unity
+    path: Assets/gameRe/Scenes/PISO 2.5.unity
     guid: 26cc51215d582444caffa48e2d677a51
   - enabled: 1
-    path: Assets/Scenes/PISO 2.1.unity
+    path: Assets/gameRe/Scenes/PISO 2.unity
+    guid: 856986eb3687a1c4088553d9cc38dc47
+  - enabled: 1
+    path: Assets/gameRe/Scenes/PISO 2.1.unity
     guid: a8c3fba80874966478f4b3049515ae83
   - enabled: 1
-    path: Assets/Scenes/PISO3.unity
+    path: Assets/gameRe/Scenes/PISO3.unity
     guid: 8c5de2d46a6dfa2429dac4a1c6421a02
   - enabled: 1
-    path: Assets/Scenes/GameOver.unity
+    path: Assets/gameRe/Scenes/GameOver.unity
     guid: 21f312e29e1c6a947ae6ec321d81a2f1
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
