@@ -109,18 +109,22 @@ public class Jugador : MonoBehaviour
             inputMov = Vector2.zero;
             SetVelocity(Vector2.zero);
 
-            if (sprite != null) sprite.flipX = false;
-
             if (clipForzadoEncadenado != null && anim != null)
             {
+                if (sprite != null) sprite.flipX = false;
                 anim.enabled = true;
                 anim.Play(clipForzadoEncadenado.name, -1, 0f);
                 animActual = clipForzadoEncadenado.name;
             }
             else if (spriteForzadoEncadenado != null && sprite != null)
             {
+                sprite.flipX = false;
                 if (anim != null) anim.enabled = false;
                 sprite.sprite = spriteForzadoEncadenado;
+            }
+            else
+            {
+                ForzarAnimacionIdle();
             }
         }
         else
@@ -128,6 +132,25 @@ public class Jugador : MonoBehaviour
             if (anim != null) anim.enabled = true;
             animActual = string.Empty;
             ActualizarAnimaciones();
+        }
+    }
+
+    private void ForzarAnimacionIdle()
+    {
+        if (!anim) return;
+        anim.enabled = true;
+
+        bool esHorizontal = Mathf.Abs(ultimaDir.x) >= Mathf.Abs(ultimaDir.y);
+        if (sprite != null)
+        {
+            sprite.flipX = esHorizontal && ultimaDir.x < 0f;
+        }
+
+        AnimationClip clipIdle = esHorizontal ? aIdleRight : (ultimaDir.y > 0f ? aIdleUp : aIdleDown);
+        if (clipIdle != null)
+        {
+            anim.Play(clipIdle.name, -1, 0f);
+            animActual = clipIdle.name;
         }
     }
 
@@ -139,7 +162,12 @@ public class Jugador : MonoBehaviour
 
     void OnMove(InputValue value)
     {
-        if (encadenado) return;
+        if (encadenado)
+        {
+            inputMov = Vector2.zero;
+            return;
+        }
+
         inputMov = value.Get<Vector2>();
         if (inputMov.sqrMagnitude > 0.01f && !dasheando && (ataque == null || !ataque.EstaAtacando))
         {

@@ -211,6 +211,7 @@ MonoBehaviour:
   esJugador: 0
   tiempoInvulnerabilidadDanio: 0.6
   retrasoDestruccionAlMorir: 0
+  conservarObjetoAlMorir: 0
   AlRecibirDanio:
     m_PersistentCalls:
       m_Calls: []
@@ -242,9 +243,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bfc3825145d0bd47b6d5d54dd074cc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Empuje
-  duracion: 0.3
-  suavizado: 0.15
-  resistencia: 1
+  duracionEmpuje: 0.15
+  desaceleracion: 35
+  inmuneAEmpuje: 0
 --- !u!95 &6793208628922281850
 Animator:
   serializedVersion: 7
@@ -333,7 +334,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4eae664ac996054f895f5e530736ad3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IndicadorAtaque
-  colorBorde: {r: 0.003921569, g: 0.65882355, b: 0.99607843, a: 1}
-  grosorBorde: 0.03125
+  colorAviso: {r: 0, g: 0.6509804, b: 1, a: 0.9}
   velocidadParpadeo: 14
-  incluirDiagonales: 0
+  escalaContorno: 1.18

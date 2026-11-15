@@ -3,41 +3,42 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Empuje : MonoBehaviour
 {
-    [Header("Empuje")]
-    public float duracion = 0.2f;
-    [Range(0.05f, 1f)] public float suavizado = 0.15f;
-    [Range(0.1f, 3f)] public float resistencia = 1f;
+    [SerializeField, Min(0.01f)] private float duracionEmpuje = 0.15f;
+    [SerializeField, Min(0f)] private float desaceleracion = 35f;
+    [SerializeField] private bool inmuneAEmpuje;
 
     private Rigidbody2D rb;
-    private float timer;
-    private Vector2 velRef;
+    private Vida vida;
+    private float timerEmpuje;
 
-    public bool EstaEmpujado => timer > 0f;
-    public bool EstaSiendoEmpujado => timer > 0f;
+    public bool EstaEmpujado => timerEmpuje > 0f;
+    public bool InmuneAEmpuje { get => inmuneAEmpuje; set => inmuneAEmpuje = value; }
 
     void Awake()
     {
         TryGetComponent(out rb);
+        TryGetComponent(out vida);
     }
 
     public void AplicarEmpuje(Vector2 direccion, float fuerza)
     {
-        timer = duracion;
-        velRef = Vector2.zero;
-        rb.linearVelocity = direccion.normalized * (fuerza * resistencia);
+        if (inmuneAEmpuje || fuerza <= 0f) return;
+        if (vida != null && vida.EsInvulnerable) return;
+
+        timerEmpuje = duracionEmpuje;
+        rb.linearVelocity = direccion.normalized * fuerza;
+    }
+
+    public void CancelarEmpuje()
+    {
+        timerEmpuje = 0f;
     }
 
     void FixedUpdate()
     {
-        if (timer <= 0f) return;
+        if (timerEmpuje <= 0f) return;
 
-        rb.linearVelocity = Vector2.SmoothDamp(rb.linearVelocity, Vector2.zero, ref velRef, suavizado);
-        timer -= Time.fixedDeltaTime;
-
-        if (timer <= 0f || rb.linearVelocity.sqrMagnitude < 0.01f)
-        {
-            rb.linearVelocity = Vector2.zero;
-            timer = 0f;
-        }
+        timerEmpuje -= Time.fixedDeltaTime;
+        rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, desaceleracion * Time.fixedDeltaTime);
     }
 }
