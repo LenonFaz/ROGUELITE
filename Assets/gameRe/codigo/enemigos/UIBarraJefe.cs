@@ -1,65 +1,73 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class UIBarraJefe : MonoBehaviour
 {
     public static UIBarraJefe Instancia { get; private set; }
 
     [Header("Referencias UI")]
-    [SerializeField] private GameObject contenedorVisual;
-    [SerializeField] private Image barraRelleno;
-    [SerializeField] private Image barraRetraso;
+    [SerializeField] private GameObject panelBarra;
+    [SerializeField] private Image rellenoBarra;
+    [SerializeField] private Image rellenoRetrasado;
+    [SerializeField] private TMP_Text textoNombreJefe;
+    [SerializeField] private string nombrePorDefecto = "La Inquisidora";
+    [SerializeField, Min(0.5f)] private float velocidadSuavizado = 4f;
 
-    [Header("Ajustes")]
-    [SerializeField, Min(0.1f)] private float velocidadSuavizado = 5f;
-
-    private Vida vidaJefe;
+    private Vida jefeActual;
+    private float fillObjetivo = 1f;
 
     void Awake()
     {
-        if (Instancia == null) Instancia = this;
-        else Destroy(gameObject);
-
-        if (contenedorVisual != null)
-        {
-            contenedorVisual.SetActive(false);
-        }
+        Instancia = this;
+        if (panelBarra != null) panelBarra.SetActive(false);
     }
 
-    public void VincularJefe(Vida jefe)
+    public void VincularJefe(Vida vidaJefe, string nombre = "")
     {
-        vidaJefe = jefe;
+        if (jefeActual != null)
+        {
+            jefeActual.AlRecibirDanio.RemoveListener(ActualizarBarra);
+            jefeActual.AlMorir.RemoveListener(OcultarBarra);
+        }
 
-        if (barraRelleno != null) barraRelleno.fillAmount = 1f;
-        if (barraRetraso != null) barraRetraso.fillAmount = 1f;
-        if (contenedorVisual != null) contenedorVisual.SetActive(true);
+        jefeActual = vidaJefe;
+        if (jefeActual == null) return;
 
-        vidaJefe.AlMorir.AddListener(OcultarBarra);
+        if (textoNombreJefe != null)
+        {
+            textoNombreJefe.text = string.IsNullOrEmpty(nombre) ? nombrePorDefecto : nombre;
+        }
+
+        fillObjetivo = jefeActual.PorcentajeVida;
+        if (rellenoBarra != null) rellenoBarra.fillAmount = fillObjetivo;
+        if (rellenoRetrasado != null) rellenoRetrasado.fillAmount = fillObjetivo;
+
+        jefeActual.AlRecibirDanio.AddListener(ActualizarBarra);
+        jefeActual.AlMorir.AddListener(OcultarBarra);
+
+        if (panelBarra != null) panelBarra.SetActive(true);
+    }
+
+    private void ActualizarBarra()
+    {
+        if (jefeActual == null) return;
+        fillObjetivo = jefeActual.PorcentajeVida;
+        if (rellenoBarra != null) rellenoBarra.fillAmount = fillObjetivo;
     }
 
     public void OcultarBarra()
     {
-        vidaJefe = null;
-        if (contenedorVisual != null)
-        {
-            contenedorVisual.SetActive(false);
-        }
+        if (panelBarra != null) panelBarra.SetActive(false);
     }
 
     void Update()
     {
-        if (vidaJefe == null) return;
+        if (jefeActual == null || panelBarra == null || !panelBarra.activeSelf) return;
 
-        float porcentaje = vidaJefe.PorcentajeVida;
-
-        if (barraRelleno != null)
+        if (rellenoRetrasado != null)
         {
-            barraRelleno.fillAmount = porcentaje;
-        }
-
-        if (barraRetraso != null)
-        {
-            barraRetraso.fillAmount = Mathf.Lerp(barraRetraso.fillAmount, porcentaje, velocidadSuavizado * Time.deltaTime);
+            rellenoRetrasado.fillAmount = Mathf.Lerp(rellenoRetrasado.fillAmount, fillObjetivo, velocidadSuavizado * Time.deltaTime);
         }
     }
 }

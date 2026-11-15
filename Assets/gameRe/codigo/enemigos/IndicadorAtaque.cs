@@ -1,112 +1,61 @@
 using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(SpriteRenderer))]
 public class IndicadorAtaque : MonoBehaviour
 {
-    [Header("Configuración del Borde")]
-    [SerializeField] private Color colorBorde = new Color(1f, 0.15f, 0.15f, 1f);
-    [SerializeField, Min(0.005f)] private float grosorBorde = 0.03125f;
-    [SerializeField, Min(1f)] private float velocidadParpadeo = 14f;
-    [SerializeField] private bool incluirDiagonales = false;
-
-    private static Material materialSilueta;
+    [Header("Configuración del Aviso")]
+    [SerializeField] private Color colorAviso = new Color(1f, 0.9f, 0.2f, 0.9f);
+    [SerializeField, Min(1f)] private float velocidadParpadeo = 25f;
+    [SerializeField, Min(1f)] private float escalaContorno = 1.18f;
 
     private SpriteRenderer srPrincipal;
-    private GameObject contenedorBorde;
-    private SpriteRenderer[] renderersBorde;
+    private SpriteRenderer srContorno;
     private Coroutine rutina;
-    private bool bordeActivo;
-
-    private static readonly Vector2[] direcciones =
-    {
-        Vector2.up,
-        Vector2.down,
-        Vector2.left,
-        Vector2.right,
-        new Vector2(1f, 1f),
-        new Vector2(-1f, 1f),
-        new Vector2(1f, -1f),
-        new Vector2(-1f, -1f)
-    };
+    private static Material materialBlancoCompartido;
 
     void Awake()
     {
-        TryGetComponent(out srPrincipal);
-        InicializarMaterial();
-        CrearRenderersBorde();
+        srPrincipal = GetComponentInChildren<SpriteRenderer>();
+        CrearContorno();
     }
 
-    private void InicializarMaterial()
+    private void CrearContorno()
     {
-        if (materialSilueta != null) return;
+        if (srPrincipal == null) return;
 
-        Shader s = Shader.Find("GUI/Text Shader") ?? Shader.Find("Sprites/Default");
-        if (s != null)
+        if (materialBlancoCompartido == null)
         {
-            materialSilueta = new Material(s);
+            Shader s = Shader.Find("GUI/Text Shader") ?? Shader.Find("Sprites/Default");
+            if (s != null) materialBlancoCompartido = new Material(s);
         }
+
+        GameObject objContorno = new GameObject("ContornoAviso");
+        objContorno.transform.SetParent(srPrincipal.transform, false);
+        objContorno.transform.localPosition = Vector3.zero;
+        objContorno.transform.localScale = Vector3.one * escalaContorno;
+
+        srContorno = objContorno.AddComponent<SpriteRenderer>();
+        if (materialBlancoCompartido != null) srContorno.sharedMaterial = materialBlancoCompartido;
+        srContorno.sortingLayerID = srPrincipal.sortingLayerID;
+        srContorno.sortingOrder = srPrincipal.sortingOrder - 1;
+        srContorno.enabled = false;
     }
 
-    private void CrearRenderersBorde()
+    public void ConfigurarColorAviso(Color nuevoColor)
     {
-        int cantidad = incluirDiagonales ? 8 : 4;
-        renderersBorde = new SpriteRenderer[cantidad];
-
-        contenedorBorde = new GameObject("ContornoAviso");
-        contenedorBorde.transform.SetParent(srPrincipal.transform, false);
-        contenedorBorde.transform.localPosition = Vector3.zero;
-        contenedorBorde.transform.localRotation = Quaternion.identity;
-        contenedorBorde.transform.localScale = Vector3.one;
-
-        for (int i = 0; i < cantidad; i++)
-        {
-            GameObject hijo = new GameObject("Borde_" + i);
-            hijo.transform.SetParent(contenedorBorde.transform, false);
-            hijo.transform.localPosition = (Vector3)(direcciones[i] * grosorBorde);
-
-            SpriteRenderer sr = hijo.AddComponent<SpriteRenderer>();
-            if (materialSilueta != null) sr.sharedMaterial = materialSilueta;
-            sr.color = colorBorde;
-            sr.sortingLayerID = srPrincipal.sortingLayerID;
-            sr.sortingOrder = srPrincipal.sortingOrder - 1;
-            sr.enabled = false;
-
-            renderersBorde[i] = sr;
-        }
-
-        contenedorBorde.SetActive(false);
-    }
-
-    void LateUpdate()
-    {
-        if (!bordeActivo || srPrincipal == null) return;
-
-        Sprite spriteActual = srPrincipal.sprite;
-        bool flipX = srPrincipal.flipX;
-        bool flipY = srPrincipal.flipY;
-        int layerID = srPrincipal.sortingLayerID;
-        int order = srPrincipal.sortingOrder - 1;
-
-        for (int i = 0; i < renderersBorde.Length; i++)
-        {
-            SpriteRenderer sr = renderersBorde[i];
-            if (sr == null) continue;
-
-            sr.transform.localPosition = (Vector3)(direcciones[i] * grosorBorde);
-            sr.sprite = spriteActual;
-            sr.flipX = flipX;
-            sr.flipY = flipY;
-            sr.sortingLayerID = layerID;
-            sr.sortingOrder = order;
-        }
+        colorAviso = nuevoColor;
     }
 
     public void MostrarAviso(float duracion)
     {
-        if (!gameObject.activeInHierarchy) return;
+        MostrarAviso(duracion, colorAviso);
+    }
+
+    public void MostrarAviso(float duracion, Color colorPersonalizado)
+    {
+        if (!gameObject.activeInHierarchy || duracion <= 0f) return;
         if (rutina != null) StopCoroutine(rutina);
-        rutina = StartCoroutine(RutinaParpadeo(duracion));
+        rutina = StartCoroutine(RutinaParpadeo(duracion, colorPersonalizado));
     }
 
     public void CancelarAviso()
@@ -116,55 +65,38 @@ public class IndicadorAtaque : MonoBehaviour
             StopCoroutine(rutina);
             rutina = null;
         }
-        ApagarBorde();
+        if (srContorno != null) srContorno.enabled = false;
     }
 
-    private IEnumerator RutinaParpadeo(float duracion)
+    private IEnumerator RutinaParpadeo(float duracion, Color colorBaseAviso)
     {
-        bordeActivo = true;
-        if (contenedorBorde != null) contenedorBorde.SetActive(true);
+        if (srContorno == null) CrearContorno();
+        if (srContorno == null) yield break;
 
-        for (int i = 0; i < renderersBorde.Length; i++)
-        {
-            if (renderersBorde[i] != null) renderersBorde[i].enabled = true;
-        }
-
+        srContorno.enabled = true;
         float t = 0f;
-        float d = Mathf.Max(0.05f, duracion);
 
-        while (t < d)
+        while (t < duracion)
         {
             t += Time.deltaTime;
-            float onda = Mathf.Sin(t * velocidadParpadeo * Mathf.PI);
-            Color c = colorBorde;
-            c.a = onda >= 0f ? colorBorde.a : 0.15f;
-
-            for (int i = 0; i < renderersBorde.Length; i++)
+            if (srPrincipal != null)
             {
-                if (renderersBorde[i] != null) renderersBorde[i].color = c;
+                srContorno.sprite = srPrincipal.sprite;
+                srContorno.flipX = srPrincipal.flipX;
+                srContorno.flipY = srPrincipal.flipY;
+                srContorno.transform.localScale = Vector3.one * escalaContorno;
             }
+
+            float onda = (Mathf.Sin(t * velocidadParpadeo) + 1f) * 0.5f;
+            Color c = colorBaseAviso;
+            c.a = Mathf.Lerp(0.15f, colorBaseAviso.a, onda);
+            srContorno.color = c;
 
             yield return null;
         }
 
-        ApagarBorde();
+        srContorno.enabled = false;
         rutina = null;
-    }
-
-    private void ApagarBorde()
-    {
-        bordeActivo = false;
-        if (renderersBorde != null)
-        {
-            for (int i = 0; i < renderersBorde.Length; i++)
-            {
-                if (renderersBorde[i] != null) renderersBorde[i].enabled = false;
-            }
-        }
-        if (contenedorBorde != null)
-        {
-            contenedorBorde.SetActive(false);
-        }
     }
 
     void OnDisable()
