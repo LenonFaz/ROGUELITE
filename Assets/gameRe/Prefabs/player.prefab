@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: 7964564165039044297}
   - component: {fileID: 3224645154452167972}
   - component: {fileID: 1381247087919100914}
+  - component: {fileID: 899174175181809361}
   m_Layer: 6
   m_Name: player
   m_TagString: Player
@@ -453,6 +454,7 @@ MonoBehaviour:
   esJugador: 1
   tiempoInvulnerabilidadDanio: 0.3
   retrasoDestruccionAlMorir: 0
+  conservarObjetoAlMorir: 0
   AlRecibirDanio:
     m_PersistentCalls:
       m_Calls: []
@@ -511,3 +513,23 @@ MonoBehaviour:
   - {x: 0.5, y: -0.5, z: 0}
   - {x: 0.5, y: 0.5, z: 0}
   - {x: -0.5, y: 0.5, z: 0}
+--- !u!114 &899174175181809361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1374719718505522085}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: baf8855815f19364ead63aeda3d42d35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SecuenciaMuerteJugador
+  spriteJugador: {fileID: 0}
+  animJugador: {fileID: 0}
+  clipMuerte: {fileID: 0}
+  pausaInicialAntesAnim: 0.25
+  duracionExtraPostAnim: 0.6
+  duracionFadeFinalNegro: 0.85
+  colorFondoMuerte: {r: 0, g: 0, b: 0, a: 1}
+  nombreEscenaAlMorir: 

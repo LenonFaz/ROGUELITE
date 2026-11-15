@@ -31,7 +31,11 @@ public class Vida : MonoBehaviour
         EsInvulnerable = false;
         TryGetComponent(out impactoVisual);
 
-        if (!esJugador)
+        if (esJugador)
+        {
+            conservarObjetoAlMorir = true;
+        }
+        else
         {
             if (!TryGetComponent(out ShadowCaster2D sombra))
             {

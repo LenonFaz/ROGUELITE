@@ -9,6 +9,10 @@ public interface IRangoDeteccion
 [RequireComponent(typeof(Collider2D))]
 public class Sala : MonoBehaviour
 {
+    [Header("Identificador y Checkpoint")]
+    [SerializeField] private string idUnicoSala;
+    [SerializeField] private Transform puntoReaparicionPersonalizado;
+
     [Header("Elementos de la Sala")]
     [SerializeField] private List<Vida> enemigos = new List<Vida>();
     [SerializeField] private List<Puerta> puertas = new List<Puerta>();
@@ -27,6 +31,12 @@ public class Sala : MonoBehaviour
 
     void Awake()
     {
+        if (string.IsNullOrEmpty(idUnicoSala))
+        {
+            Vector3 p = transform.position;
+            idUnicoSala = $"{gameObject.scene.name}_{gameObject.name}_{Mathf.RoundToInt(p.x)}_{Mathf.RoundToInt(p.y)}";
+        }
+
         colSala = GetComponent<PolygonCollider2D>();
         if (colSala == null) TryGetComponent(out colSala);
 
@@ -37,6 +47,25 @@ public class Sala : MonoBehaviour
         }
 
         AutodetectarEnemigosEnPoligono();
+
+        if (GestorProgresoSalas.EstaSalaCompletada(idUnicoSala))
+        {
+            salaLimpia = true;
+            for (int i = 0; i < enemigos.Count; i++)
+            {
+                if (enemigos[i] != null)
+                {
+                    Destroy(enemigos[i].gameObject);
+                }
+            }
+            enemigos.Clear();
+
+            for (int i = 0; i < puertas.Count; i++)
+            {
+                if (puertas[i] != null) puertas[i].Abrir();
+            }
+            return;
+        }
 
         for (int i = 0; i < enemigos.Count; i++)
         {
@@ -86,7 +115,7 @@ public class Sala : MonoBehaviour
 
         if (jugador != null && colSala != null && colSala.OverlapPoint(jugador.position))
         {
-            ActivarEntradaSala();
+            ActivarEntradaSala(jugador.position);
         }
     }
 
@@ -111,15 +140,18 @@ public class Sala : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Player")) return;
-        ActivarEntradaSala();
+        ActivarEntradaSala(other.transform.position);
     }
 
-    private void ActivarEntradaSala()
+    private void ActivarEntradaSala(Vector3 posEntradaJugador)
     {
         if (limitarCamaraAEsteEspacio && CamaraSeguimiento.Instancia != null && colSala != null)
         {
             CamaraSeguimiento.Instancia.EstablecerLimitesSala(colSala, ajustarZoomCamara, zoomPersonalizado);
         }
+
+        Vector3 puntoCheckpoint = puntoReaparicionPersonalizado != null ? puntoReaparicionPersonalizado.position : posEntradaJugador;
+        GestorProgresoSalas.GuardarCheckpointEntrada(puntoCheckpoint);
 
         if (salaLimpia || jugadorEnSala) return;
 
@@ -178,6 +210,7 @@ public class Sala : MonoBehaviour
     private void CompletarSala()
     {
         salaLimpia = true;
+        GestorProgresoSalas.MarcarSalaCompletada(idUnicoSala);
 
         if (GestorLuz.Instancia != null)
         {
