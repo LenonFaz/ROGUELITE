@@ -24,10 +24,10 @@ public class SecuenciaMuerteJugador : MonoBehaviour
     private Jugador jugador;
     private AtaqueJugador ataque;
     private Rigidbody2D rb;
+    private Material materialOriginalJugador;
     private bool secuenciaIniciada;
 
-    private static Texture2D texBlanca;
-    private static Material matUnlit;
+    private static Sprite spriteTelonCompartido;
 
     void Awake()
     {
@@ -36,8 +36,25 @@ public class SecuenciaMuerteJugador : MonoBehaviour
         TryGetComponent(out ataque);
         TryGetComponent(out rb);
 
-        if (!spriteJugador) spriteJugador = GetComponentInChildren<SpriteRenderer>();
         if (!animJugador) animJugador = GetComponentInChildren<Animator>();
+
+        if (!spriteJugador)
+        {
+            if (animJugador != null && animJugador.TryGetComponent(out SpriteRenderer srAnim))
+            {
+                spriteJugador = srAnim;
+            }
+            else
+            {
+                TryGetComponent(out spriteJugador);
+                if (!spriteJugador) spriteJugador = GetComponentInChildren<SpriteRenderer>();
+            }
+        }
+
+        if (spriteJugador != null)
+        {
+            materialOriginalJugador = spriteJugador.sharedMaterial;
+        }
 
         vida.EstablecerConservarAlMorir(true);
         vida.AlMorir.AddListener(IniciarSecuenciaMuerte);
@@ -64,6 +81,19 @@ public class SecuenciaMuerteJugador : MonoBehaviour
     {
         if (jugador != null) jugador.enabled = false;
         if (ataque != null) ataque.enabled = false;
+
+        if (TryGetComponent(out ImpactoJugador impacto))
+        {
+            impacto.StopAllCoroutines();
+            impacto.enabled = false;
+        }
+
+        if (TryGetComponent(out IndicadorAtaque ind))
+        {
+            ind.CancelarAviso();
+            ind.enabled = false;
+        }
+
         if (rb != null)
         {
             rb.linearVelocity = Vector2.zero;
@@ -75,6 +105,15 @@ public class SecuenciaMuerteJugador : MonoBehaviour
             GestorLuz.Instancia.EstablecerPlegariaActiva(false);
         }
 
+        SpriteRenderer[] srsHijos = GetComponentsInChildren<SpriteRenderer>(true);
+        for (int i = 0; i < srsHijos.Length; i++)
+        {
+            if (srsHijos[i] != null && srsHijos[i] != spriteJugador)
+            {
+                srsHijos[i].enabled = false;
+            }
+        }
+
         Canvas[] todosLosCanvas = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
         for (int i = 0; i < todosLosCanvas.Length; i++)
         {
@@ -82,35 +121,50 @@ public class SecuenciaMuerteJugador : MonoBehaviour
         }
 
         Light2D[] todasLasLuces = FindObjectsByType<Light2D>(FindObjectsSortMode.None);
+        bool existeLuzGlobal = false;
         for (int i = 0; i < todasLasLuces.Length; i++)
         {
-            if (todasLasLuces[i] != null)
+            if (todasLasLuces[i] == null) continue;
+
+            if (todasLasLuces[i].lightType == Light2D.LightType.Global)
             {
-                if (todasLasLuces[i].lightType == Light2D.LightType.Global)
-                {
-                    todasLasLuces[i].color = Color.white;
-                    todasLasLuces[i].intensity = 1f;
-                }
-                else
-                {
-                    todasLasLuces[i].enabled = false;
-                }
+                todasLasLuces[i].enabled = true;
+                todasLasLuces[i].color = Color.white;
+                todasLasLuces[i].intensity = 1f;
+                existeLuzGlobal = true;
             }
+            else
+            {
+                todasLasLuces[i].enabled = false;
+            }
+        }
+
+        if (!existeLuzGlobal)
+        {
+            GameObject objLuzGlobal = new GameObject("LuzGlobalMuerteHades");
+            Light2D nuevaGlobal = objLuzGlobal.AddComponent<Light2D>();
+            nuevaGlobal.lightType = Light2D.LightType.Global;
+            nuevaGlobal.color = Color.white;
+            nuevaGlobal.intensity = 1f;
         }
 
         Time.timeScale = 0f;
 
-        AsegurarRecursosVisuales();
+        AsegurarSpriteTelon();
 
         int capaMasAlta = ObtenerSortingLayerMasAlta();
-        SpriteRenderer telonFondo = CrearTelonPantalla("TelonNegroFondoHades", capaMasAlta, 30000, colorFondoMuerte);
+        CrearTelonPantalla("TelonNegroFondoHades", capaMasAlta, 30000, colorFondoMuerte);
 
         if (spriteJugador != null)
         {
+            spriteJugador.enabled = true;
+            if (materialOriginalJugador != null)
+            {
+                spriteJugador.sharedMaterial = materialOriginalJugador;
+            }
+            spriteJugador.color = Color.white;
             spriteJugador.sortingLayerID = capaMasAlta;
             spriteJugador.sortingOrder = 30005;
-            spriteJugador.color = Color.white;
-            if (matUnlit != null) spriteJugador.sharedMaterial = matUnlit;
         }
 
         float tPausa = pausaInicialAntesAnim;
@@ -165,20 +219,18 @@ public class SecuenciaMuerteJugador : MonoBehaviour
         }
     }
 
-    private void AsegurarRecursosVisuales()
+    private void AsegurarSpriteTelon()
     {
-        if (texBlanca == null)
-        {
-            texBlanca = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-            texBlanca.SetPixels(new Color[] { Color.white, Color.white, Color.white, Color.white });
-            texBlanca.Apply();
-        }
+        if (spriteTelonCompartido != null) return;
 
-        if (matUnlit == null)
-        {
-            Shader s = Shader.Find("Sprites/Default") ?? Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
-            if (s != null) matUnlit = new Material(s);
-        }
+        Texture2D tex = new Texture2D(4, 4, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Point;
+        Color[] pix = new Color[16];
+        for (int i = 0; i < 16; i++) pix[i] = Color.white;
+        tex.SetPixels(pix);
+        tex.Apply();
+
+        spriteTelonCompartido = Sprite.Create(tex, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), 4f);
     }
 
     private int ObtenerSortingLayerMasAlta()
@@ -197,11 +249,10 @@ public class SecuenciaMuerteJugador : MonoBehaviour
         Vector3 posCentro = Camera.main != null ? Camera.main.transform.position : transform.position;
         posCentro.z = 0f;
         obj.transform.position = posCentro;
-        obj.transform.localScale = new Vector3(400f, 400f, 1f);
+        obj.transform.localScale = new Vector3(500f, 500f, 1f);
 
         SpriteRenderer sr = obj.AddComponent<SpriteRenderer>();
-        sr.sprite = Sprite.Create(texBlanca, new Rect(0, 0, 2, 2), new Vector2(0.5f, 0.5f), 2f);
-        if (matUnlit != null) sr.sharedMaterial = matUnlit;
+        sr.sprite = spriteTelonCompartido;
         sr.sortingLayerID = sortingLayerId;
         sr.sortingOrder = sortingOrder;
         sr.color = colorInicial;
