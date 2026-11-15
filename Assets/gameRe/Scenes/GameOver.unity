@@ -908,7 +908,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e22f0bf3f9a7034dbda0bee19939d0b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameOver
-  escenaInicial: PISO3
+  escenaInicial: PISO 1
   escenaMenu: MenuPrincipal
 --- !u!1 &1866158216
 GameObject:
