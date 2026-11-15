@@ -16,6 +16,7 @@ public class Sala : MonoBehaviour
     [Header("Elementos de la Sala")]
     [SerializeField] private List<Vida> enemigos = new List<Vida>();
     [SerializeField] private List<Puerta> puertas = new List<Puerta>();
+    [SerializeField, Min(0f)] private float distanciaAdentroParaCerrarPuertas = 0.65f;
     [SerializeField] private bool reiniciarLuzAlEntrar = true;
 
     [Header("Configuración de Cámara")]
@@ -25,6 +26,8 @@ public class Sala : MonoBehaviour
 
     private Collider2D colSala;
     private Transform jugador;
+    private Vector3 posContactoInicial;
+    private bool esperandoCruzarUmbral;
     private bool jugadorEnSala;
     private bool combateIniciado;
     private bool salaLimpia;
@@ -47,6 +50,7 @@ public class Sala : MonoBehaviour
         }
 
         AutodetectarEnemigosEnPoligono();
+        AutodetectarPuertasCercanas();
 
         if (GestorProgresoSalas.EstaSalaCompletada(idUnicoSala))
         {
@@ -101,6 +105,27 @@ public class Sala : MonoBehaviour
         }
     }
 
+    private void AutodetectarPuertasCercanas()
+    {
+        if (puertas.Count > 0) return;
+
+        GetComponentsInChildren(true, puertas);
+        if (puertas.Count > 0 || colSala == null) return;
+
+        Bounds bExpandido = colSala.bounds;
+        bExpandido.Expand(1.5f);
+
+        Puerta[] todasLasPuertas = FindObjectsByType<Puerta>(FindObjectsSortMode.None);
+        for (int i = 0; i < todasLasPuertas.Length; i++)
+        {
+            Puerta p = todasLasPuertas[i];
+            if (p != null && bExpandido.Contains(p.transform.position) && !puertas.Contains(p))
+            {
+                puertas.Add(p);
+            }
+        }
+    }
+
     void Start()
     {
         if (Jugador.Instancia != null)
@@ -115,12 +140,25 @@ public class Sala : MonoBehaviour
 
         if (jugador != null && colSala != null && colSala.OverlapPoint(jugador.position))
         {
-            ActivarEntradaSala(jugador.position);
+            ActivarCamaraYCheckpoint(jugador.position);
+            ConfirmarIngresoYEncerrar();
         }
     }
 
     void Update()
     {
+        if (esperandoCruzarUmbral && !jugadorEnSala && jugador != null)
+        {
+            if (colSala != null && colSala.OverlapPoint(jugador.position))
+            {
+                float distRecorrida = Vector2.Distance(posContactoInicial, jugador.position);
+                if (distRecorrida >= distanciaAdentroParaCerrarPuertas || !EstaCercaDeAlgunaPuerta(jugador.position))
+                {
+                    ConfirmarIngresoYEncerrar();
+                }
+            }
+        }
+
         if (!jugadorEnSala || salaLimpia || combateIniciado || jugador == null) return;
 
         for (int i = 0; i < enemigos.Count; i++)
@@ -137,13 +175,48 @@ public class Sala : MonoBehaviour
         }
     }
 
+    private bool EstaCercaDeAlgunaPuerta(Vector3 posJugador)
+    {
+        for (int i = 0; i < puertas.Count; i++)
+        {
+            if (puertas[i] != null && Vector2.Distance(posJugador, puertas[i].transform.position) < 0.85f)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Player")) return;
-        ActivarEntradaSala(other.transform.position);
+
+        jugador = other.transform;
+        ActivarCamaraYCheckpoint(other.transform.position);
+
+        if (salaLimpia || jugadorEnSala) return;
+
+        posContactoInicial = other.transform.position;
+        if (distanciaAdentroParaCerrarPuertas <= 0.01f)
+        {
+            ConfirmarIngresoYEncerrar();
+        }
+        else
+        {
+            esperandoCruzarUmbral = true;
+        }
     }
 
-    private void ActivarEntradaSala(Vector3 posEntradaJugador)
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (!other.CompareTag("Player")) return;
+        if (!jugadorEnSala)
+        {
+            esperandoCruzarUmbral = false;
+        }
+    }
+
+    private void ActivarCamaraYCheckpoint(Vector3 posEntradaJugador)
     {
         if (limitarCamaraAEsteEspacio && CamaraSeguimiento.Instancia != null && colSala != null)
         {
@@ -152,9 +225,13 @@ public class Sala : MonoBehaviour
 
         Vector3 puntoCheckpoint = puntoReaparicionPersonalizado != null ? puntoReaparicionPersonalizado.position : posEntradaJugador;
         GestorProgresoSalas.GuardarCheckpointEntrada(puntoCheckpoint);
+    }
 
+    private void ConfirmarIngresoYEncerrar()
+    {
         if (salaLimpia || jugadorEnSala) return;
 
+        esperandoCruzarUmbral = false;
         jugadorEnSala = true;
 
         if (GestorLuz.Instancia != null)
