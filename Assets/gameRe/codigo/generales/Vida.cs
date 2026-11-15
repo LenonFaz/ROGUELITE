@@ -120,7 +120,13 @@ public class Vida : MonoBehaviour
     {
         AlMorir?.Invoke();
 
-        if (!esJugador && GestorLuz.Instancia != null)
+        if (esJugador)
+        {
+            Debug.Log("Jugador murió");
+            Time.timeScale = 1f;
+            FadeManager.Instance.CargarEscena("GameOver");
+        }
+        else if (GestorLuz.Instancia != null)
         {
             GestorLuz.Instancia.RegistrarMuerteDeEnemigo();
         }

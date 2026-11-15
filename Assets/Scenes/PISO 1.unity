@@ -124796,6 +124796,91 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6663044863503563684, guid: 8c0c76fb77f57be45ab8b753acf9d464, type: 3}
   m_PrefabInstance: {fileID: 488418940}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &509016452
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 822257855931004225, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.53
+      objectReference: {fileID: 0}
+    - target: {fileID: 822257855931004225, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.76
+      objectReference: {fileID: 0}
+    - target: {fileID: 1319524998526618558, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: player
+      value: 
+      objectReference: {fileID: 1767776593}
+    - target: {fileID: 1528286896988900397, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_Name
+      value: CheckpointManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 4306021313879290442, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -2.08
+      objectReference: {fileID: 0}
+    - target: {fileID: 4306021313879290442, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 33.17
+      objectReference: {fileID: 0}
+    - target: {fileID: 7122359145457871467, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.36851
+      objectReference: {fileID: 0}
+    - target: {fileID: 7122359145457871467, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 10.78895
+      objectReference: {fileID: 0}
+    - target: {fileID: 7122359145457871467, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7122359145457871467, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7122359145457871467, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7122359145457871467, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7122359145457871467, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7122359145457871467, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7122359145457871467, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7122359145457871467, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8125419339512531604, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.83
+      objectReference: {fileID: 0}
+    - target: {fileID: 8125419339512531604, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 15.44
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 8a248dd052b7bb440a7c68fd9c5a34bc, type: 3}
 --- !u!1001 &519044438
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -158377,3 +158462,4 @@ SceneRoots:
   - {fileID: 1912066501}
   - {fileID: 1120392577}
   - {fileID: 1518001913}
+  - {fileID: 509016452}
