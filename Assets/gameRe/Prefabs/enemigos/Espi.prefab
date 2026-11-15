@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 9098814924755998645}
   - component: {fileID: 8193739701696520999}
   - component: {fileID: 3382309005417959267}
+  - component: {fileID: 5532245120830622211}
   m_Layer: 3
   m_Name: Espi
   m_TagString: Untagged
@@ -160,6 +161,7 @@ MonoBehaviour:
   esJugador: 0
   tiempoInvulnerabilidadDanio: 0.6
   retrasoDestruccionAlMorir: 0
+  conservarObjetoAlMorir: 0
   AlRecibirDanio:
     m_PersistentCalls:
       m_Calls: []
@@ -178,9 +180,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bfc3825145d0bd47b6d5d54dd074cc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Empuje
-  duracion: 0.2
-  suavizado: 0.15
-  resistencia: 0.81
+  duracionEmpuje: 0.15
+  desaceleracion: 35
+  inmuneAEmpuje: 0
 --- !u!58 &9098814924755998645
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -275,6 +277,21 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5532245120830622211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6233034672802623694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4eae664ac996054f895f5e530736ad3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IndicadorAtaque
+  colorAviso: {r: 0, g: 0.5890684, b: 1, a: 0.9}
+  velocidadParpadeo: 25
+  escalaContorno: 1.18
 --- !u!1 &8713813989180913712
 GameObject:
   m_ObjectHideFlags: 0

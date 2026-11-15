@@ -23849,7 +23849,7 @@ MonoBehaviour:
   m_BlendStyleIndex: 0
   m_FalloffIntensity: 0.5
   m_Color: {r: 0.798236, g: 0.7311321, b: 1, a: 1}
-  m_Intensity: 0.2
+  m_Intensity: 0.55
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
   m_ApplyToSortingLayers: 00000000fdb2403935e57b4449b60e63db6acfd5
@@ -25871,11 +25871,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2784941799141906057, guid: 21a292c7607a9e249b82e4805a2b20a4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -51.11
+      value: -40.11
       objectReference: {fileID: 0}
     - target: {fileID: 2784941799141906057, guid: 21a292c7607a9e249b82e4805a2b20a4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 14.33
+      value: 7.33
       objectReference: {fileID: 0}
     - target: {fileID: 2784941799141906057, guid: 21a292c7607a9e249b82e4805a2b20a4, type: 3}
       propertyPath: m_LocalPosition.z
@@ -43101,7 +43101,7 @@ Tilemap:
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
-  m_Color: {r: 0.26486292, g: 0.36647204, b: 0.6037736, a: 1}
+  m_Color: {r: 0.2956123, g: 0.4098759, b: 0.6886792, a: 1}
   m_Origin: {x: -16, y: -26, z: 0}
   m_Size: {x: 106, y: 86, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
@@ -167871,7 +167871,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 289056785964898139, guid: c32769c75ac4b384d8d97ce06dca154e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.72
+      value: -3.72
       objectReference: {fileID: 0}
     - target: {fileID: 289056785964898139, guid: c32769c75ac4b384d8d97ce06dca154e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -168017,7 +168017,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8701397085188779640, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -12.8
+      value: -9.8
       objectReference: {fileID: 0}
     - target: {fileID: 8701397085188779640, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_LocalPosition.z

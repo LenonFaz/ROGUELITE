@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 1664966723808290078}
   - component: {fileID: 6866570642225351096}
   - component: {fileID: 6934018678743831973}
+  - component: {fileID: 2124992928678294718}
   m_Layer: 3
   m_Name: Escudero
   m_TagString: Untagged
@@ -154,6 +155,14 @@ MonoBehaviour:
   capaJugador:
     serializedVersion: 2
     m_Bits: 64
+  anim: {fileID: 0}
+  sprite: {fileID: 0}
+  aCaminarArriba: {fileID: 0}
+  aCaminarAbajo: {fileID: 0}
+  aPrepararCarga: {fileID: 0}
+  aCargaArriba: {fileID: 0}
+  aCargaAbajo: {fileID: 0}
+  aCargaDerecha: {fileID: 0}
 --- !u!114 &2467672133465619038
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -169,6 +178,8 @@ MonoBehaviour:
   vidaMaxima: 4
   esJugador: 0
   tiempoInvulnerabilidadDanio: 0.6
+  retrasoDestruccionAlMorir: 0
+  conservarObjetoAlMorir: 0
   AlRecibirDanio:
     m_PersistentCalls:
       m_Calls: []
@@ -187,9 +198,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bfc3825145d0bd47b6d5d54dd074cc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Empuje
-  duracion: 0.2
-  suavizado: 0.15
-  resistencia: 1
+  duracionEmpuje: 0.15
+  desaceleracion: 35
+  inmuneAEmpuje: 0
 --- !u!58 &1664966723808290078
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -269,3 +280,18 @@ MonoBehaviour:
   tagsTerreno:
   - pared
   - hueco
+--- !u!114 &2124992928678294718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7164333299462811464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4eae664ac996054f895f5e530736ad3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IndicadorAtaque
+  colorAviso: {r: 0, g: 0.6484008, b: 1, a: 0.9}
+  velocidadParpadeo: 25
+  escalaContorno: 1.18
