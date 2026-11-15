@@ -225,6 +225,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11235205eed7e9e409732d87e9e7d3fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Sala
+  idUnicoSala: 
+  puntoReaparicionPersonalizado: {fileID: 0}
   enemigos:
   - {fileID: 1825238980}
   - {fileID: 298050425}
@@ -114440,7 +114442,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8701397085188779640, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -5.2
+      value: 0.8000002
       objectReference: {fileID: 0}
     - target: {fileID: 8701397085188779640, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_LocalPosition.z
@@ -114894,9 +114896,17 @@ PrefabInstance:
       value: Game manager
       objectReference: {fileID: 0}
     - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
+      propertyPath: rellenoBarra
+      value: 
+      objectReference: {fileID: 1326107450}
+    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
       propertyPath: imagenRelleno
       value: 
       objectReference: {fileID: 1326107450}
+    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
+      propertyPath: contenedorSacudida
+      value: 
+      objectReference: {fileID: 1767666153}
     - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
       propertyPath: velocidadSuavizado
       value: 22
@@ -115459,6 +115469,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11235205eed7e9e409732d87e9e7d3fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Sala
+  idUnicoSala: 
+  puntoReaparicionPersonalizado: {fileID: 0}
   enemigos:
   - {fileID: 146178794}
   - {fileID: 1660683624}
@@ -124466,6 +124478,11 @@ PrefabInstance:
 --- !u!224 &1767666152 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6610643805395074755, guid: 061d5ee5889301e4699e01cc653b44a8, type: 3}
+  m_PrefabInstance: {fileID: 1767666151}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &1767666153 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 8957941605564836148, guid: 061d5ee5889301e4699e01cc653b44a8, type: 3}
   m_PrefabInstance: {fileID: 1767666151}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1767776593 stripped
@@ -146043,6 +146060,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11235205eed7e9e409732d87e9e7d3fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Sala
+  idUnicoSala: 
+  puntoReaparicionPersonalizado: {fileID: 0}
   enemigos:
   - {fileID: 769859353}
   - {fileID: 1930466345}

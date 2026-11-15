@@ -672,6 +672,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 899174175181809361, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
+      propertyPath: clipMuerte
+      value: 
+      objectReference: {fileID: 7400000, guid: 1598b6041b463684b92a2e68f143f8c4, type: 2}
+    - target: {fileID: 899174175181809361, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
+      propertyPath: animJugador
+      value: 
+      objectReference: {fileID: 277792584}
+    - target: {fileID: 899174175181809361, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
+      propertyPath: spriteJugador
+      value: 
+      objectReference: {fileID: 277792583}
     - target: {fileID: 1374719718505522085, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_Name
       value: player
@@ -724,6 +736,16 @@ PrefabInstance:
 --- !u!4 &277792582 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8701397085188779640, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
+  m_PrefabInstance: {fileID: 277792581}
+  m_PrefabAsset: {fileID: 0}
+--- !u!212 &277792583 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 339602450359692185, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
+  m_PrefabInstance: {fileID: 277792581}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &277792584 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5755313477370026081, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
   m_PrefabInstance: {fileID: 277792581}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &288440681
@@ -5492,41 +5514,13 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 772192199}
     - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
-      propertyPath: colorNormal.b
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
-      propertyPath: colorNormal.g
-      value: 0.6509804
-      objectReference: {fileID: 0}
-    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
-      propertyPath: colorNormal.r
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
       propertyPath: imagenRelleno
       value: 
       objectReference: {fileID: 772192199}
     - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
-      propertyPath: colorPeligro.b
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
-      propertyPath: colorPeligro.g
-      value: 0.9489641
-      objectReference: {fileID: 0}
-    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
-      propertyPath: colorPeligro.r
-      value: 0.8537736
-      objectReference: {fileID: 0}
-    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
       propertyPath: contenedorSacudida
       value: 
       objectReference: {fileID: 851204968}
-    - target: {fileID: 8076459902015891098, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
-      propertyPath: umbralInicioTemblor
-      value: 0.5
-      objectReference: {fileID: 0}
     - target: {fileID: 8417566162203724334, guid: 046120e85ceb914409ea4942cc1c3e16, type: 3}
       propertyPath: panelMenu
       value: 

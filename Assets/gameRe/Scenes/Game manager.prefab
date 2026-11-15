@@ -64,8 +64,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8103a05550b858f43888529b6aa3c89e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIBarraLuz
-  imagenRelleno: {fileID: 0}
-  velocidadSuavizado: 22
+  contenedorSacudida: {fileID: 0}
+  rellenoBarra: {fileID: 0}
+  velocidadRelleno: 10
+  umbralInicioTemblor: 0.5
+  intensidadTemblorMaxima: 6
+  amplitudLatidoEscala: 0.08
+  velocidadLatidoMaxima: 18
+  colorNormal: {r: 0, g: 0.6509804, b: 1, a: 1}
+  colorPeligro: {r: 0.8537736, g: 0.9489641, b: 1, a: 1}
+  colorDestelloImpacto: {r: 1, g: 1, b: 1, a: 1}
+  duracionImpactoDanio: 0.28
+  fuerzaTemblorDanio: 11
+  escalaGolpeDanio: 0.22
 --- !u!114 &8417566162203724334
 MonoBehaviour:
   m_ObjectHideFlags: 0
