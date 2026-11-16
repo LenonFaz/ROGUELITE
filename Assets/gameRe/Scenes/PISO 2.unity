@@ -12159,8 +12159,8 @@ MonoBehaviour:
   - {fileID: 663691531}
   distanciaAdentroParaCerrarPuertas: 0.65
   reiniciarLuzAlEntrar: 1
-  limitarCamaraAEsteEspacio: 1
-  ajustarZoomCamara: 1
+  limitarCamaraAEsteEspacio: 0
+  ajustarZoomCamara: 0
   zoomPersonalizado: 0
 --- !u!60 &536617262
 PolygonCollider2D:
@@ -25641,11 +25641,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8701397085188779640, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 12.25
+      value: -3.95
       objectReference: {fileID: 0}
     - target: {fileID: 8701397085188779640, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 16.85
+      value: -8.82
       objectReference: {fileID: 0}
     - target: {fileID: 8701397085188779640, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_LocalPosition.z

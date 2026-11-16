@@ -5531,7 +5531,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 771183401786098064, guid: 6c75ad635a3c53b41a58d079f0369e17, type: 3}
       propertyPath: vidaMaxima
-      value: 20
+      value: 80
       objectReference: {fileID: 0}
     - target: {fileID: 1156453800573090957, guid: 6c75ad635a3c53b41a58d079f0369e17, type: 3}
       propertyPath: cdDash
@@ -5553,6 +5553,10 @@ PrefabInstance:
       propertyPath: limitesArena
       value: 
       objectReference: {fileID: 1126947255}
+    - target: {fileID: 1156453800573090957, guid: 6c75ad635a3c53b41a58d079f0369e17, type: 3}
+      propertyPath: portalSalida
+      value: 
+      objectReference: {fileID: 1038742243}
     - target: {fileID: 1156453800573090957, guid: 6c75ad635a3c53b41a58d079f0369e17, type: 3}
       propertyPath: oleadasTouhou
       value: 4
@@ -6400,7 +6404,7 @@ GameObject:
   - component: {fileID: 1038742242}
   - component: {fileID: 1038742241}
   - component: {fileID: 1038742240}
-  - component: {fileID: 1038742239}
+  - component: {fileID: 1038742243}
   m_Layer: 0
   m_Name: PORTAL2xd
   m_TagString: Untagged
@@ -6408,40 +6412,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1038742239
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1038742238}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 422b954f8213eec4d9b9d17b10f22ecc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PortalPiso
-  nombreSiguienteEscena: Victoria
-  indiceSiguienteEscena: 0
-  requiereActivacionExterna: 0
-  apagarAlSalir: 1
-  spritePortal: {fileID: 0}
-  spriteApagado: {fileID: 21300000, guid: c938e7a2783ab1e44b7bb5f8bcc2b27e, type: 3}
-  spriteEncendido: {fileID: 21300000, guid: 2d7a6a1301b53b14a8266752f28d0341, type: 3}
-  animPortal: {fileID: 0}
-  clipPortalApagado: {fileID: 0}
-  clipPortalEncendido: {fileID: 0}
-  luzPortal: {fileID: 0}
-  intensidadLuzEncendido: 1.8
-  intensidadLuzAlViajar: 3.5
-  velocidadTransicionLuz: 8
-  objetoIconoEspacio: {fileID: 0}
-  offsetIconoDebajo: {x: 0, y: -1.23}
-  puntoCentroPortal: {fileID: 0}
-  velocidadCentradoJugador: 4.5
-  clipJugadorTeletransporte: {fileID: 0}
-  duracionExtraAntesDeCambiar: 0.35
-  hacerFadeNegroAlFinal: 1
-  duracionFadeNegro: 0.45
 --- !u!58 &1038742240
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -6546,12 +6516,45 @@ Transform:
   m_GameObject: {fileID: 1038742238}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 53.51, y: 39.35, z: 0}
+  m_LocalPosition: {x: 53.51, y: 17.7, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1038742243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1038742238}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bba76fda9997544ba1295476dae5a9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PortalSalida
+  nombreSiguienteEscena: Victoria
+  indiceSiguienteEscena: 0
+  spritePortal: {fileID: 1038742241}
+  spriteApagado: {fileID: 21300000, guid: c938e7a2783ab1e44b7bb5f8bcc2b27e, type: 3}
+  spriteEncendido: {fileID: 21300000, guid: 2d7a6a1301b53b14a8266752f28d0341, type: 3}
+  animPortal: {fileID: 0}
+  clipPortalApagado: {fileID: 0}
+  clipPortalEncendido: {fileID: 0}
+  luzPortal: {fileID: 0}
+  intensidadLuzEncendido: 1.8
+  intensidadLuzAlViajar: 3.5
+  velocidadTransicionLuz: 8
+  objetoIconoEspacio: {fileID: 0}
+  offsetIconoDebajo: {x: 0, y: -0.85}
+  radioDeteccionJugador: 0.85
+  puntoCentroPortal: {fileID: 0}
+  velocidadCentradoJugador: 4.5
+  clipJugadorTeletransporte: {fileID: 0}
+  duracionExtraAntesDeCambiar: 0.35
+  hacerFadeNegroAlFinal: 1
+  duracionFadeNegro: 0.45
 --- !u!1001 &1046844220
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -24046,11 +24049,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8701397085188779640, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 53.76
+      value: 53.68
       objectReference: {fileID: 0}
     - target: {fileID: 8701397085188779640, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 36.62
+      value: -8.53
       objectReference: {fileID: 0}
     - target: {fileID: 8701397085188779640, guid: 867a6b964b6187e4d8b1c7f7afc034e3, type: 3}
       propertyPath: m_LocalPosition.z
