@@ -5531,7 +5531,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 771183401786098064, guid: 6c75ad635a3c53b41a58d079f0369e17, type: 3}
       propertyPath: vidaMaxima
-      value: 80
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 1156453800573090957, guid: 6c75ad635a3c53b41a58d079f0369e17, type: 3}
       propertyPath: cdDash
