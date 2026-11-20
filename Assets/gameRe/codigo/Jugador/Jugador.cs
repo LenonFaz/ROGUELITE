@@ -11,13 +11,14 @@ public class Jugador : MonoBehaviour
     [SerializeField, Min(0f)] private float acel = 45f;
     [SerializeField, Min(0f)] private float desacel = 60f;
 
-    [Header("Dash")]
+    [Header("Dash y Colisión Sólida")]
     [SerializeField, Min(0f)] private float velDash = 14.9f;
     [SerializeField, Min(0f)] private float durDash = 0.12f;
     [SerializeField, Min(0f)] private float cdDash = 0.6f;
     [SerializeField, Min(0f)] private float controlEnDash = 12f;
     [SerializeField] private bool invulnerableEnDash = true;
     [SerializeField, Min(0f)] private float durInvulnerableDash = 0.25f;
+    [SerializeField, Min(0.005f)] private float margenSeguridadPared = 0.03f;
 
     [Header("Efecto Imagen Residual")]
     [SerializeField] private bool usarImagenResidual = true;
@@ -44,6 +45,10 @@ public class Jugador : MonoBehaviour
     [SerializeField] private AtaqueJugador ataque;
 
     private Rigidbody2D rb;
+    private Collider2D miCollider;
+    private ContactFilter2D filtroColisionSolida;
+    private readonly RaycastHit2D[] bufferHits = new RaycastHit2D[8];
+
     private Vector2 inputMov;
     private Vector2 ultimaDir = Vector2.down;
     private Vector2 dirDash = Vector2.down;
@@ -70,9 +75,17 @@ public class Jugador : MonoBehaviour
     {
         Instancia = this;
         TryGetComponent(out rb);
+        TryGetComponent(out miCollider);
+
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+        filtroColisionSolida = new ContactFilter2D();
+        filtroColisionSolida.useTriggers = false;
+        filtroColisionSolida.SetLayerMask(Physics2D.GetLayerCollisionMask(gameObject.layer));
+        filtroColisionSolida.useLayerMask = true;
 
         if (!sprite) sprite = GetComponentInChildren<SpriteRenderer>();
         if (!anim) anim = GetComponentInChildren<Animator>();
@@ -287,14 +300,90 @@ public class Jugador : MonoBehaviour
                 }
             }
 
-            SetVelocity(dirDash * velDash);
+            Vector2 velSegura = CalcularVelocidadSeguraAntiTunel(dirDash, velDash, Time.fixedDeltaTime);
+            SetVelocity(velSegura);
             return;
         }
 
         Vector2 obj = inputMov * vel;
         float tasa = inputMov.sqrMagnitude > 0.01f ? acel : desacel;
         Vector2 velActual = GetVelocity();
-        SetVelocity(Vector2.MoveTowards(velActual, obj, tasa * Time.fixedDeltaTime));
+        Vector2 velMov = Vector2.MoveTowards(velActual, obj, tasa * Time.fixedDeltaTime);
+
+        if (velMov.sqrMagnitude > 0.01f)
+        {
+            velMov = CalcularVelocidadSeguraAntiTunel(velMov.normalized, velMov.magnitude, Time.fixedDeltaTime);
+        }
+
+        SetVelocity(velMov);
+    }
+
+    private Vector2 CalcularVelocidadSeguraAntiTunel(Vector2 direccion, float rapidez, float dt)
+    {
+        if (rapidez <= 0.001f || dt <= 0f) return Vector2.zero;
+
+        float distPaso = rapidez * dt;
+
+        if (!BuscarObstaculoMasCercano(direccion, distPaso + margenSeguridadPared, out RaycastHit2D hitPrincipal))
+        {
+            return direccion * rapidez;
+        }
+
+        float distLibre = Mathf.Max(0f, hitPrincipal.distance - margenSeguridadPared);
+
+        if (distLibre > 0.01f)
+        {
+            return direccion * (distLibre / dt);
+        }
+
+        Vector2 tangente = new Vector2(-hitPrincipal.normal.y, hitPrincipal.normal.x);
+        float proyeccionDeslizamiento = Vector2.Dot(direccion, tangente);
+
+        if (Mathf.Abs(proyeccionDeslizamiento) > 0.1f)
+        {
+            Vector2 dirDesliz = (tangente * Mathf.Sign(proyeccionDeslizamiento)).normalized;
+            float rapidezDesliz = rapidez * Mathf.Abs(proyeccionDeslizamiento);
+            float distDesliz = rapidezDesliz * dt;
+
+            if (!BuscarObstaculoMasCercano(dirDesliz, distDesliz + margenSeguridadPared, out RaycastHit2D hitDesliz))
+            {
+                return dirDesliz * rapidezDesliz;
+            }
+
+            float libreDesliz = Mathf.Max(0f, hitDesliz.distance - margenSeguridadPared);
+            return dirDesliz * (libreDesliz / dt);
+        }
+
+        return Vector2.zero;
+    }
+
+    private bool BuscarObstaculoMasCercano(Vector2 direccion, float distancia, out RaycastHit2D hitMasCercano)
+    {
+        hitMasCercano = default;
+        int cantidad = rb.Cast(direccion, filtroColisionSolida, bufferHits, distancia);
+        if (cantidad == 0) return false;
+
+        float menorDist = float.MaxValue;
+        bool encontrado = false;
+
+        for (int i = 0; i < cantidad; i++)
+        {
+            RaycastHit2D h = bufferHits[i];
+            if (h.collider == null || h.collider == miCollider || h.collider.isTrigger) continue;
+
+            if (miCollider != null && Physics2D.GetIgnoreCollision(miCollider, h.collider)) continue;
+
+            if (Vector2.Dot(h.normal, direccion) >= -0.01f) continue;
+
+            if (h.distance < menorDist)
+            {
+                menorDist = h.distance;
+                hitMasCercano = h;
+                encontrado = true;
+            }
+        }
+
+        return encontrado;
     }
 
     private void SetVelocity(Vector2 v)
